@@ -1,7 +1,9 @@
 package com.example.mapkitresultproject.presentation.mapscreen
 
 import android.content.Context
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
+import com.example.mapkitresultproject.R
 import com.example.mapkitresultproject.domain.usecase.CreateRouteUseCase
 import com.example.mapkitresultproject.domain.usecase.SearchUseCase
 import com.yandex.mapkit.directions.DirectionsFactory
@@ -11,6 +13,8 @@ import com.yandex.mapkit.directions.driving.VehicleType
 import com.yandex.mapkit.geometry.Geometry
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.map.Map
+import com.yandex.mapkit.map.MapObjectCollection
+import com.yandex.mapkit.map.PolylineMapObject
 import com.yandex.mapkit.map.VisibleRegion
 import com.yandex.mapkit.search.SearchFactory
 import com.yandex.mapkit.search.SearchManager
@@ -42,6 +46,8 @@ class MapViewModel @Inject constructor(
 
     lateinit var map: Map
 
+    var placemarksCollection: MapObjectCollection?=null
+    var routesCollection: MapObjectCollection?=null
 
     private fun setSearchManager(searchManager: SearchManager) {
         searchUseCase.setSearchManager(searchManager = searchManager)
@@ -106,6 +112,24 @@ class MapViewModel @Inject constructor(
 
     fun getResultedRout() = createRouteUseCase.getResultedRout()
 
+
+
+
+    fun PolylineMapObject.styleMainRoute() {
+        zIndex = 10f
+        setStrokeColor(ContextCompat.getColor(appContext, R.color.gray))
+        strokeWidth = 5f
+        outlineColor = ContextCompat.getColor(appContext, R.color.black )
+        outlineWidth = 3f
+    }
+
+    fun PolylineMapObject.styleAlternativeRoute() {
+        zIndex = 5f
+        setStrokeColor(ContextCompat.getColor(appContext, R.color.light_blue))
+        strokeWidth = 4f
+        outlineColor = ContextCompat.getColor(appContext, R.color.black)
+        outlineWidth = 2f
+    }
 
 //    private val searchedPoints = SearchedPoints()
 //

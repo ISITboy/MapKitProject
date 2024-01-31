@@ -7,7 +7,15 @@ import com.yandex.mapkit.geometry.Point
 sealed interface SearchState {
     data object Off : SearchState
     data object Loading : SearchState
-    data class Error(val message: String) : SearchState
+    class Error() : SearchState{
+        private var _message:String=""
+        var message:String
+            get() = _message
+            set(value) {
+                _message = value
+            }
+
+    }
     data class Success(
         val items: List<SearchResponseItem>,
         val zoomToItems: Boolean,

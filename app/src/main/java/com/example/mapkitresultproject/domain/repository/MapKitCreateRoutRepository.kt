@@ -3,6 +3,7 @@ package com.example.mapkitresultproject.domain.repository
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.mapkitresultproject.domain.models.SearchState
+import com.yandex.mapkit.directions.driving.DrivingRoute
 import com.yandex.mapkit.directions.driving.DrivingRouter
 import com.yandex.mapkit.directions.driving.VehicleType
 import com.yandex.mapkit.geometry.Point
@@ -19,5 +20,5 @@ interface MapKitCreateRoutRepository {
     fun setPointsForRoute(points: List<Point>)
     fun clearPointsForRoute()
     fun getCreateRouteState(): SearchState
-    fun getResultedRout(): LiveData<List<Point>>
+    fun getResultedRout(): LiveData<List<DrivingRoute>>
 }
