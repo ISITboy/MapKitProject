@@ -21,7 +21,7 @@ class SearchUseCase @Inject constructor(
     }
     fun getSearchState() = searchRepository.getSearchState()
 
-    fun getResultedPoint() = searchRepository.getResultedPoint()
+//    fun getResultedPoint() = searchRepository.getResultedPoint()
 
     fun setSearchOption(resultPageSize: Int, searchTypes: SearchType) {
         searchRepository.setSearchOption(
@@ -44,6 +44,8 @@ class SearchUseCase @Inject constructor(
     fun setMapObjectTapListener(mapObjectTapListener: MapObjectTapListener){
         searchRepository.setMapObjectTapListener(mapObjectTapListener = mapObjectTapListener)
     }
+
+    fun subscribeForSearch() = searchRepository.subscribeForSearch()
 
 
 }

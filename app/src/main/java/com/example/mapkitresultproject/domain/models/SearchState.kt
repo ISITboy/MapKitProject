@@ -17,6 +17,8 @@ sealed interface SearchState {
 
     }
     data class Success(
-        val items: List<SearchResponseItem>
+        val items: List<SearchResponseItem>,
+        val zoomToItems: Boolean,
+        val itemsBoundingBox: BoundingBox
     ) : SearchState
 }

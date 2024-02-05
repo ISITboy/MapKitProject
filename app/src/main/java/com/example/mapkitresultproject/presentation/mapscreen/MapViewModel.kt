@@ -81,7 +81,11 @@ class MapViewModel @Inject constructor(
 
     fun getSearchState() = searchUseCase.getSearchState()
 
-    fun getResultedPoint()= searchUseCase.getResultedPoint()
+    fun subscribeForSearch() = searchUseCase.subscribeForSearch()
+
+//    val uiSearchState :StateFlow<>
+
+//    fun getResultedPoint()= searchUseCase.getResultedPoint()
 
     private fun setDrivingRouter(drivingRouter: DrivingRouter) {
         createRouteUseCase.setDrivingRouter(drivingRouter = drivingRouter)

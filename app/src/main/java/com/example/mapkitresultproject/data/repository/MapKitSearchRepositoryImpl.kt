@@ -16,6 +16,7 @@ import com.yandex.mapkit.map.IconStyle
 import com.yandex.mapkit.map.MapObjectCollection
 import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.VisibleRegion
+import com.yandex.mapkit.map.VisibleRegionUtils
 import com.yandex.mapkit.search.Response
 import com.yandex.mapkit.search.SearchManager
 import com.yandex.mapkit.search.SearchOptions
@@ -24,8 +25,15 @@ import com.yandex.mapkit.search.Session
 import com.yandex.runtime.Error
 import com.yandex.runtime.image.ImageProvider
 import com.yandex.runtime.network.NetworkError
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 class MapKitSearchRepositoryImpl @Inject constructor(
     private val context: Context
@@ -34,19 +42,26 @@ class MapKitSearchRepositoryImpl @Inject constructor(
     private lateinit var searchManager: SearchManager
     private lateinit var searchOptions: SearchOptions
     private var searchSession: Session? = null
-    private var resultResponse = MutableLiveData<Point>()
-    private val region = MutableStateFlow<VisibleRegion?>(null)
-    private val searchState = MutableStateFlow<SearchState>(SearchState.Off)
+
     private var objectCollection: MapObjectCollection? = null
     private lateinit var searchResultPlacemarkTapListener: MapObjectTapListener
+
+    private val region = MutableStateFlow<VisibleRegion?>(null)
+    @OptIn(FlowPreview::class)
+    private val throttledRegion = region.debounce(1.seconds)
+
+
+
+    private val searchState = MutableStateFlow<SearchState>(SearchState.Off)
+
+    private var zoomToSearchResult = false
 
     override fun setMapObjectTapListener(mapObjectTapListener:MapObjectTapListener){
         searchResultPlacemarkTapListener = mapObjectTapListener
     }
 
-    override fun getSearchState() = searchState.value
+    override fun getSearchState() = searchState
 
-    override fun getResultedPoint() = resultResponse
 
     override fun setVisibleRegion(region: VisibleRegion) {
         this.region.value = region
@@ -76,6 +91,7 @@ class MapKitSearchRepositoryImpl @Inject constructor(
             searchListener
         )
         searchState.value = SearchState.Loading
+        zoomToSearchResult = true
     }
 
     private val searchListener = object : Session.SearchListener {
@@ -86,6 +102,11 @@ class MapKitSearchRepositoryImpl @Inject constructor(
             }
             val boundingBox = response.metadata.boundingBox ?: BoundingBox()
             updateSearchResponsePlacemarks(items)
+            searchState.value =SearchState.Success(
+                items = items,
+                zoomToSearchResult,
+                itemsBoundingBox = boundingBox
+            )
             searchState.value = SearchState.Off
         }
 
@@ -124,5 +145,18 @@ class MapKitSearchRepositoryImpl @Inject constructor(
     }
 
 
+    override fun subscribeForSearch(): Flow<*> {
+        return throttledRegion.filter { it != null }
+            .filter { searchState.value is SearchState.Success }
+            .mapNotNull { it }
+            .onEach { region ->
+                searchSession?.let {
+                    it.setSearchArea(VisibleRegionUtils.toPolygon(region))
+                    it.resubmit(searchListener)
+                    searchState.value = SearchState.Loading
+                    zoomToSearchResult = false
+                }
+            }
+    }
 
 }

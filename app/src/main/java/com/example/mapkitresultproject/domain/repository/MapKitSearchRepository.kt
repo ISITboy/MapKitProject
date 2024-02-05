@@ -10,11 +10,12 @@ import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.VisibleRegion
 import com.yandex.mapkit.search.SearchManager
 import com.yandex.mapkit.search.SearchType
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 interface MapKitSearchRepository {
-    fun getSearchState():SearchState
-    fun getResultedPoint(): LiveData<Point>
+    fun getSearchState(): MutableStateFlow<SearchState>
+//    fun getResultedPoint(): LiveData<Point>
     fun setVisibleRegion(region: VisibleRegion)
     fun setSearchManager(searchManager: SearchManager)
     fun setSearchOption(resultPageSize: Int, searchTypes: SearchType)
@@ -24,5 +25,7 @@ interface MapKitSearchRepository {
     )
     fun setMapObjectTapListener(mapObjectTapListener: MapObjectTapListener)
     fun setMapObjectCollection(mapObjectCollection: MapObjectCollection)
+
+    fun subscribeForSearch(): Flow<*>
 
 }

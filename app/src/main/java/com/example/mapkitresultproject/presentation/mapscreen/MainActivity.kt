@@ -28,6 +28,7 @@ import com.yandex.mapkit.ScreenPoint
 import com.yandex.mapkit.ScreenRect
 import com.yandex.mapkit.directions.driving.DrivingRoute
 import com.yandex.mapkit.directions.driving.VehicleType
+import com.yandex.mapkit.geometry.BoundingBox
 import com.yandex.mapkit.geometry.Geometry
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.geometry.Polyline
@@ -84,13 +85,29 @@ class MainActivity : AppCompatActivity() {
 
         moveToStartLocation(StartLocation())
 
-        viewModel.setSearchOption(5, SearchType.NONE)
+        viewModel.setSearchOption(15, SearchType.NONE)
 
 
-        viewModel.getResultedPoint().observe(this) {
-            Log.d("MyLog", "point: ${it.longitude} ${it.latitude}")
-            focusCamera(listOf(it), viewModel.map)
-        }
+//        viewModel.getResultedPoint().observe(this) {
+//            Log.d("MyLog", "point: ${it.longitude} ${it.latitude}")
+//            focusCamera(listOf(it), viewModel.map)
+//        }
+
+        viewModel.getSearchState().flowWithLifecycle(lifecycle)
+            .onEach {
+                val successSearchState = it as? SearchState.Success
+                val searchItems = successSearchState?.items ?: emptyList()
+                if (successSearchState?.zoomToItems == true) {
+                    focusCamera(
+                        searchItems.map { item -> item.point },
+                        successSearchState.itemsBoundingBox
+                    )
+                }
+            }.launchIn(lifecycleScope)
+
+        viewModel.subscribeForSearch().flowWithLifecycle(lifecycle).launchIn(lifecycleScope)
+
+
         binding.searchText.setOnEditorActionListener { _, _, _ ->
             viewModel.createSession(
                 binding.searchText.text.toString(),
@@ -105,10 +122,10 @@ class MainActivity : AppCompatActivity() {
         viewModel.setMapObjectCollection(viewModel.map.mapObjects)
         viewModel.setDrivingOptions(1)
         viewModel.setVehicleOptions(VehicleType.TRUCK, 5000f)
-        viewModel.getResultedRout().observe(this) {
-            viewModel.onRoutesUpdated(it)
-            focusCamera(it.flatMap { it.geometry.points }, viewModel.map)
-        }
+//        viewModel.getResultedRout().observe(this) {
+//            viewModel.onRoutesUpdated(it)
+//            focusCamera(it.flatMap { it.geometry.points }, viewModel.map)
+//        }
 
         viewModel.setMapObjectCollection_(viewModel.map.mapObjects)
 
@@ -123,18 +140,18 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun focusCamera(points: List<Point>, map: Map) {
+    private fun focusCamera(points: List<Point>, boundingBox: BoundingBox) {
         if (points.isEmpty()) return
 
         val position = if (points.size == 1) {
-            map.cameraPosition.run {
-                CameraPosition(points.first(), 15f, azimuth, tilt)
+            viewModel.map.cameraPosition.run {
+                CameraPosition(points.first(), zoom, azimuth, tilt)
             }
         } else {
-            map.cameraPosition(Geometry.fromPolyline(Polyline(points)))
+            viewModel.map.cameraPosition(Geometry.fromBoundingBox(boundingBox))
         }
 
-        map.move(position, Animation(Animation.Type.SMOOTH, 0.5f), null)
+        viewModel.map.move(position, Animation(Animation.Type.SMOOTH, 0.5f), null)
     }
 
 
@@ -177,7 +194,7 @@ class MainActivity : AppCompatActivity() {
     )
 
     fun onFindClickButton(view: View) {
-        when (viewModel.getSearchState()) {
+        when (viewModel.getSearchState().value) {
             SearchState.Off -> {
                 viewModel.createSession(
                     binding.searchText.text.toString(),
