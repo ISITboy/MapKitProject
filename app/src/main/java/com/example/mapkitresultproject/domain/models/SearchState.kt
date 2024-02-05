@@ -17,13 +17,6 @@ sealed interface SearchState {
 
     }
     data class Success(
-        val items: List<SearchResponseItem>,
-        val zoomToItems: Boolean,
-        val itemsBoundingBox: BoundingBox,
+        val items: List<SearchResponseItem>
     ) : SearchState
 }
-
-data class SearchResponseItem(
-    val point: Point,
-    val geoObject: GeoObject?,
-)

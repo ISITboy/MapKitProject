@@ -1,7 +1,6 @@
 package com.example.mapkitresultproject.data.repository
 
 import android.content.Context
-import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import com.example.mapkitresultproject.R
@@ -20,12 +19,11 @@ import com.yandex.mapkit.map.MapObjectCollection
 import com.yandex.mapkit.map.PolylineMapObject
 import com.yandex.runtime.Error
 import com.yandex.runtime.network.NetworkError
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 class MapKitCreateRoutRepositoryImpl @Inject constructor(
-    @ApplicationContext private val appContext: Context
+    private val context: Context
 ) : MapKitCreateRoutRepository {
 
     private lateinit var drivingRouter: DrivingRouter
@@ -34,7 +32,7 @@ class MapKitCreateRoutRepositoryImpl @Inject constructor(
     private var session: DrivingSession? = null
 
 
-    private lateinit var points: List<RequestPoint>
+    private var pointsForCreateRoute: MutableList<RequestPoint> = mutableListOf()
     private var resultResponse = MutableLiveData<List<DrivingRoute>>()
 
     private var routesCollection: MapObjectCollection?=null
@@ -70,19 +68,22 @@ class MapKitCreateRoutRepositoryImpl @Inject constructor(
     }
 
     override fun createSessionCreateRoute() {
-        session = drivingRouter.requestRoutes(
-            points,
-            drivingOptions,
-            vehicleOptions,
-            drivingSessionCreateRouteListener
-        )
-        createRouteState.value = SearchState.Loading
+        if(pointsForCreateRoute.size>1) {
+            session = drivingRouter.requestRoutes(
+                pointsForCreateRoute,
+                drivingOptions,
+                vehicleOptions,
+                drivingSessionCreateRouteListener
+            )
+            createRouteState.value = SearchState.Loading
+        }
     }
 
     private val drivingSessionCreateRouteListener = object : DrivingSession.DrivingRouteListener {
         override fun onDrivingRoutes(drivingRoutes: MutableList<DrivingRoute>) {
             resultResponse.value= drivingRoutes
             createRouteState.value = SearchState.Off
+
         }
 
         override fun onDrivingRoutesError(error: Error) {
@@ -95,26 +96,30 @@ class MapKitCreateRoutRepositoryImpl @Inject constructor(
     }
 
     override fun setPointsForRoute(points: List<Point>) {
-        this.points = buildList {
+        this.pointsForCreateRoute = buildList {
             addAll(points.map {
                 RequestPoint(it, RequestPointType.WAYPOINT, null, null)
             })
-        }
+        }.toMutableList()
+    }
+
+    override fun setPointForRoute(point: Point) {
+        this.pointsForCreateRoute.add(RequestPoint(point,RequestPointType.WAYPOINT, null, null))
     }
 
     override fun clearPointsForRoute() {
-        points = listOf()
+        pointsForCreateRoute.clear()
     }
 
     override fun getCreateRouteState() = createRouteState.value
 
     override fun getResultedRout() = resultResponse
 
-    fun setMapObjectCollection(mapObjectCollection:MapObjectCollection){
+    override fun setMapObjectCollection(mapObjectCollection:MapObjectCollection){
         routesCollection = mapObjectCollection
     }
 
-    fun onRoutesUpdated(routes: List<DrivingRoute>) {
+    override fun onRoutesUpdated(routes: List<DrivingRoute>) {
         clearRoutesCollection()
         routes.forEachIndexed { index, route ->
             routesCollection?.addPolyline(route.geometry)?.apply {
@@ -123,19 +128,19 @@ class MapKitCreateRoutRepositoryImpl @Inject constructor(
         }
     }
 
-    fun PolylineMapObject.styleMainRoute() {
+    private fun PolylineMapObject.styleMainRoute() {
         zIndex = 10f
-        setStrokeColor(ContextCompat.getColor(appContext, R.color.gray))
+        setStrokeColor(ContextCompat.getColor(context, R.color.gray))
         strokeWidth = 5f
-        outlineColor = ContextCompat.getColor(appContext, R.color.black )
+        outlineColor = ContextCompat.getColor(context, R.color.black )
         outlineWidth = 3f
     }
 
-    fun PolylineMapObject.styleAlternativeRoute() {
+    private fun PolylineMapObject.styleAlternativeRoute() {
         zIndex = 5f
-        setStrokeColor(ContextCompat.getColor(appContext, R.color.light_blue))
+        setStrokeColor(ContextCompat.getColor(context, R.color.light_blue))
         strokeWidth = 4f
-        outlineColor = ContextCompat.getColor(appContext, R.color.black)
+        outlineColor = ContextCompat.getColor(context, R.color.black)
         outlineWidth = 2f
     }
 

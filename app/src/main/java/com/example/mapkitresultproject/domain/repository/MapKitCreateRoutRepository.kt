@@ -7,6 +7,7 @@ import com.yandex.mapkit.directions.driving.DrivingRoute
 import com.yandex.mapkit.directions.driving.DrivingRouter
 import com.yandex.mapkit.directions.driving.VehicleType
 import com.yandex.mapkit.geometry.Point
+import com.yandex.mapkit.map.MapObjectCollection
 
 interface MapKitCreateRoutRepository {
     fun setDrivingRouter(drivingRouter: DrivingRouter)
@@ -21,4 +22,8 @@ interface MapKitCreateRoutRepository {
     fun clearPointsForRoute()
     fun getCreateRouteState(): SearchState
     fun getResultedRout(): LiveData<List<DrivingRoute>>
+    fun setMapObjectCollection(mapObjectCollection: MapObjectCollection)
+    fun onRoutesUpdated(routes: List<DrivingRoute>)
+
+    fun setPointForRoute(point: Point)
 }

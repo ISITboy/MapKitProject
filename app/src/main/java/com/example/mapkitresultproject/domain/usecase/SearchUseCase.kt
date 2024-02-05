@@ -2,6 +2,8 @@ package com.example.mapkitresultproject.domain.usecase
 
 import com.example.mapkitresultproject.domain.repository.MapKitSearchRepository
 import com.yandex.mapkit.geometry.Geometry
+import com.yandex.mapkit.map.MapObjectCollection
+import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.VisibleRegion
 import com.yandex.mapkit.search.SearchManager
 import com.yandex.mapkit.search.SearchType
@@ -33,6 +35,14 @@ class SearchUseCase @Inject constructor(
             query = query,
             geometry = geometry
         )
+    }
+
+    fun setMapObjectCollection(mapObjectCollection: MapObjectCollection) = searchRepository.setMapObjectCollection(
+        mapObjectCollection = mapObjectCollection
+    )
+
+    fun setMapObjectTapListener(mapObjectTapListener: MapObjectTapListener){
+        searchRepository.setMapObjectTapListener(mapObjectTapListener = mapObjectTapListener)
     }
 
 

@@ -2,23 +2,46 @@ package com.example.mapkitresultproject.presentation.mapscreen
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import androidx.core.widget.doAfterTextChanged
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.example.mapkitresultproject.R
+import com.example.mapkitresultproject.Utils
 import com.example.mapkitresultproject.databinding.ActivityMainBinding
 import com.example.mapkitresultproject.domain.models.SearchState
+import com.example.mapkitresultproject.domain.models.SelectedObjectHolder
+import com.example.mapkitresultproject.presentation.detailsscreen.DetailsFragment
+import com.yandex.mapkit.Animation
+import com.yandex.mapkit.GeoObject
 import com.yandex.mapkit.MapKitFactory
+import com.yandex.mapkit.ScreenPoint
+import com.yandex.mapkit.ScreenRect
 import com.yandex.mapkit.directions.driving.DrivingRoute
 import com.yandex.mapkit.directions.driving.VehicleType
+import com.yandex.mapkit.geometry.Geometry
 import com.yandex.mapkit.geometry.Point
+import com.yandex.mapkit.geometry.Polyline
+import com.yandex.mapkit.map.CameraListener
+import com.yandex.mapkit.map.CameraPosition
+import com.yandex.mapkit.map.CameraUpdateReason
+import com.yandex.mapkit.map.InputListener
+import com.yandex.mapkit.map.Map
+import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.PolylineMapObject
 import com.yandex.mapkit.map.VisibleRegionUtils
 import com.yandex.mapkit.search.SearchType
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
@@ -29,6 +52,23 @@ class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
     private val viewModel: MapViewModel by viewModels()
 
+    private lateinit var editQueryTextWatcher: TextWatcher
+
+    private val cameraListener = CameraListener { _, _, finished, _ ->
+        // Updating current visible region to apply research on map moved by user gestures.
+        if (finished == CameraUpdateReason.GESTURES) {
+            updateFocusRect()
+        }
+    }
+
+    private val searchResultPlacemarkTapListener = MapObjectTapListener { mapObject, _ ->
+        // Show details dialog on placemark tap.
+        val selectedObject = (mapObject.userData as? GeoObject)
+        SelectedObjectHolder.selectedObject = selectedObject
+        DetailsFragment().show(supportFragmentManager, null)
+        true
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         MapKitFactory.initialize(this)
@@ -37,92 +77,85 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.map = binding.mapview.map
         viewModel.setVisibleRegion(viewModel.map.visibleRegion)
+        viewModel.addMapInputListener(viewModel.map)
+        viewModel.map.addCameraListener(cameraListener)
 
-        viewModel.setSearchOption(1, SearchType.NONE)
-        viewModel.createSession(
-            "Минск",
-            VisibleRegionUtils.toPolygon(binding.mapview.map.visibleRegion)
-        )
-        binding.buttonClearRoute.setOnClickListener {
-            if(viewModel.getSearchState() is SearchState.Off) {
-                viewModel.createSession(
-                    "Гродно",
-                    VisibleRegionUtils.toPolygon(binding.mapview.map.visibleRegion)
-                )
-            }
-            else Toast.makeText(this,"Loading",Toast.LENGTH_SHORT).show()
+        viewModel.setMapObjectTapListener(searchResultPlacemarkTapListener)
 
-            viewModel.clearPointsForRoute()
-            viewModel.setPointsForRoute(listOf(Point(53.691341, 23.833418),Point(53.689998, 23.837021)))
+        moveToStartLocation(StartLocation())
+
+        viewModel.setSearchOption(5, SearchType.NONE)
+
+
+        viewModel.getResultedPoint().observe(this) {
+            Log.d("MyLog", "point: ${it.longitude} ${it.latitude}")
+            focusCamera(listOf(it), viewModel.map)
+        }
+        binding.searchText.setOnEditorActionListener { _, _, _ ->
+            viewModel.createSession(
+                binding.searchText.text.toString(),
+                VisibleRegionUtils.toPolygon(binding.mapview.map.visibleRegion)
+            )
+            true
+        }
+
+        viewModel.setMapObjectCollection__(viewModel.map.mapObjects)
+
+
+        viewModel.setMapObjectCollection(viewModel.map.mapObjects)
+        viewModel.setDrivingOptions(1)
+        viewModel.setVehicleOptions(VehicleType.TRUCK, 5000f)
+        viewModel.getResultedRout().observe(this) {
+            viewModel.onRoutesUpdated(it)
+            focusCamera(it.flatMap { it.geometry.points }, viewModel.map)
+        }
+
+        viewModel.setMapObjectCollection_(viewModel.map.mapObjects)
+
+
+        viewModel.getResultedPoints().observe(this) {
+            Log.d("MyLog", "observe ${Utils.getCoordinates(it)}")
+            viewModel.setPointForRoute(it)
             viewModel.createSessionCreateRoute()
         }
-        viewModel.getResultedPoint()
-
-        viewModel.getResultedPoint().observe(this){
-            Log.d("MyLog", "point: ${it.longitude} ${it.latitude}")
-
-        }
-
-
-        viewModel.setDrivingOptions(1)
-        viewModel.setVehicleOptions(VehicleType.TRUCK,5000f)
-        viewModel.setPointsForRoute(listOf(Point(53.677844, 23.843776),Point(53.688190, 23.824166)))
-        viewModel.createSessionCreateRoute()
-        viewModel.getResultedRout().observe(this){
-            onRoutesUpdated(it)
-        }
 
 
 
-
-//
-//        viewModel.map.addInputListener(viewModel.inputListener)
-//
-//        viewModel.routesCollection = viewModel.map.mapObjects.addCollection()
-//        viewModel.placemarksCollection = viewModel.map.mapObjects.addCollection()
-//        viewModel.setVisibleRegion(viewModel.map.visibleRegion)
-//
-//        viewModel.moveToStartLocation()
-//
-//        viewModel.drivingRouter =
-//            DirectionsFactory.getInstance().createDrivingRouter(DrivingRouterType.COMBINED)
-//
-//        binding.buttonClearRoute.setOnClickListener {
-//            viewModel.routePoints = emptyList()
-//        }
-//        viewModel.submitSearch("Дубко 20")
-//        viewModel.submitSearch("Гродненский Зоопарк")
     }
 
-    fun onRoutesUpdated(routes: List<DrivingRoute>) {
-        viewModel.routesCollection = viewModel.map.mapObjects.addCollection()
-        viewModel.routesCollection?.clear()
+    private fun focusCamera(points: List<Point>, map: Map) {
+        if (points.isEmpty()) return
 
-        routes.forEachIndexed { index, route ->
-            viewModel.routesCollection = viewModel.map.mapObjects.addCollection()
-            viewModel.routesCollection?.addPolyline(route.geometry)?.apply {
-                if (index == 0) styleMainRoute() else styleAlternativeRoute()
-
+        val position = if (points.size == 1) {
+            map.cameraPosition.run {
+                CameraPosition(points.first(), 15f, azimuth, tilt)
             }
+        } else {
+            map.cameraPosition(Geometry.fromPolyline(Polyline(points)))
         }
+
+        map.move(position, Animation(Animation.Type.SMOOTH, 0.5f), null)
     }
 
-    fun PolylineMapObject.styleMainRoute() {
-        zIndex = 10f
-        setStrokeColor(ContextCompat.getColor(this@MainActivity, R.color.gray))
-        strokeWidth = 5f
-        outlineColor = ContextCompat.getColor(this@MainActivity, R.color.black )
-        outlineWidth = 3f
+
+    private fun updateFocusRect() {
+        val horizontal = resources.getDimension(R.dimen.window_horizontal_padding)
+        val vertical = resources.getDimension(R.dimen.window_vertical_padding)
+        val window = binding.mapview.mapWindow
+
+        window.focusRect = ScreenRect(
+            ScreenPoint(horizontal, vertical),
+            ScreenPoint(window.width() - horizontal, window.height() - vertical),
+        )
     }
 
-    fun PolylineMapObject.styleAlternativeRoute() {
-        zIndex = 5f
-        setStrokeColor(ContextCompat.getColor(this@MainActivity, R.color.light_blue))
-        strokeWidth = 4f
-        outlineColor = ContextCompat.getColor(this@MainActivity, R.color.black)
-        outlineWidth = 2f
-    }
-
+    private fun moveToStartLocation(startLocation: StartLocation) =
+        with(startLocation) {
+            binding.mapview.map.move(
+                CameraPosition(location, zoomValue, azimuthValue, tiltValue),
+                Animation(Animation.Type.SMOOTH, 2f), null
+            )
+        }
 
     override fun onStart() {
         super.onStart()
@@ -134,5 +167,32 @@ class MainActivity : AppCompatActivity() {
         binding.mapview.onStop()
         MapKitFactory.getInstance().onStop()
         super.onStop()
+    }
+
+    data class StartLocation(
+        val location: Point = Point(53.685274, 23.837227),
+        val zoomValue: Float = 10.0f,//Уровень масштабирования.
+        val azimuthValue: Float = 0.0f,//Угол между севером и интересующим направлением на плоскости карты, в градусах в диапазоне [0, 360).
+        val tiltValue: Float = 0f//Наклон камеры в градусах.
+    )
+
+    fun onFindClickButton(view: View) {
+        when (viewModel.getSearchState()) {
+            SearchState.Off -> {
+                viewModel.createSession(
+                    binding.searchText.text.toString(),
+                    VisibleRegionUtils.toPolygon(binding.mapview.map.visibleRegion)
+                )
+            }
+            SearchState.Loading -> binding.searchButton.isEnabled = false
+            SearchState.Error() -> Toast.makeText(
+                this,
+                (viewModel.getSearchState() as SearchState.Error).message,
+                Toast.LENGTH_SHORT
+            ).show()
+            else->{
+
+            }
+        }
     }
 }

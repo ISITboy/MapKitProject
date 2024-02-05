@@ -1,12 +1,19 @@
 package com.example.mapkitresultproject.presentation.mapscreen
 
 import android.content.Context
+import android.util.Log
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.mapkitresultproject.R
+import com.example.mapkitresultproject.Utils.getCoordinates
 import com.example.mapkitresultproject.domain.usecase.CreateRouteUseCase
+import com.example.mapkitresultproject.domain.usecase.InteractionUseCase
 import com.example.mapkitresultproject.domain.usecase.SearchUseCase
 import com.yandex.mapkit.directions.DirectionsFactory
+import com.yandex.mapkit.directions.driving.DrivingRoute
 import com.yandex.mapkit.directions.driving.DrivingRouter
 import com.yandex.mapkit.directions.driving.DrivingRouterType
 import com.yandex.mapkit.directions.driving.VehicleType
@@ -14,6 +21,7 @@ import com.yandex.mapkit.geometry.Geometry
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.map.Map
 import com.yandex.mapkit.map.MapObjectCollection
+import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.PolylineMapObject
 import com.yandex.mapkit.map.VisibleRegion
 import com.yandex.mapkit.search.SearchFactory
@@ -23,6 +31,7 @@ import com.yandex.mapkit.search.SearchType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -30,7 +39,8 @@ import javax.inject.Inject
 class MapViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val searchUseCase: SearchUseCase,
-    private val createRouteUseCase: CreateRouteUseCase
+    private val createRouteUseCase: CreateRouteUseCase,
+    private val interactionUseCase: InteractionUseCase
 ) : ViewModel() {
 
     init {
@@ -44,10 +54,11 @@ class MapViewModel @Inject constructor(
         )
     }
 
+
+
+
     lateinit var map: Map
 
-    var placemarksCollection: MapObjectCollection?=null
-    var routesCollection: MapObjectCollection?=null
 
     private fun setSearchManager(searchManager: SearchManager) {
         searchUseCase.setSearchManager(searchManager = searchManager)
@@ -112,24 +123,41 @@ class MapViewModel @Inject constructor(
 
     fun getResultedRout() = createRouteUseCase.getResultedRout()
 
-
-
-
-    fun PolylineMapObject.styleMainRoute() {
-        zIndex = 10f
-        setStrokeColor(ContextCompat.getColor(appContext, R.color.gray))
-        strokeWidth = 5f
-        outlineColor = ContextCompat.getColor(appContext, R.color.black )
-        outlineWidth = 3f
+    fun setMapObjectCollection(mapObjectCollection: MapObjectCollection){
+        createRouteUseCase.setMapObjectCollection(mapObjectCollection = mapObjectCollection)
+    }
+    fun onRoutesUpdated(routes: List<DrivingRoute>){
+        createRouteUseCase.onRoutesUpdated(routes = routes)
+    }
+    fun setPointForRoute(point: Point) {
+        createRouteUseCase.setPointForRoute(point = point)
     }
 
-    fun PolylineMapObject.styleAlternativeRoute() {
-        zIndex = 5f
-        setStrokeColor(ContextCompat.getColor(appContext, R.color.light_blue))
-        strokeWidth = 4f
-        outlineColor = ContextCompat.getColor(appContext, R.color.black)
-        outlineWidth = 2f
+
+    fun addMapInputListener(map: Map) = interactionUseCase.addMapInputListener(map)
+
+//    private val _resultedPoint = MutableLiveData<Point>()
+//    val resultedPoint: LiveData<Point> get() = _resultedPoint
+    val _resultedPoint = MutableLiveData<Point>()
+    fun getResultedPoints() = interactionUseCase.getSelectedPoint()
+
+    fun setMapObjectCollection_(mapObjectCollection: MapObjectCollection) {
+        interactionUseCase.setMapObjectCollection(mapObjectCollection)
     }
+
+    fun setMapObjectCollection__(mapObjectCollection: MapObjectCollection) {
+        searchUseCase.setMapObjectCollection(mapObjectCollection)
+    }
+
+    fun setMapObjectTapListener(mapObjectTapListener: MapObjectTapListener){
+        searchUseCase.setMapObjectTapListener(mapObjectTapListener)
+    }
+
+
+
+
+
+
 
 //    private val searchedPoints = SearchedPoints()
 //

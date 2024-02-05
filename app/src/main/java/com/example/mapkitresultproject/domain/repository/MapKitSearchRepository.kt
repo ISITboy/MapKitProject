@@ -5,6 +5,8 @@ import androidx.lifecycle.MutableLiveData
 import com.example.mapkitresultproject.domain.models.SearchState
 import com.yandex.mapkit.geometry.Geometry
 import com.yandex.mapkit.geometry.Point
+import com.yandex.mapkit.map.MapObjectCollection
+import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.VisibleRegion
 import com.yandex.mapkit.search.SearchManager
 import com.yandex.mapkit.search.SearchType
@@ -20,4 +22,7 @@ interface MapKitSearchRepository {
         query: String,
         geometry: Geometry
     )
+    fun setMapObjectTapListener(mapObjectTapListener: MapObjectTapListener)
+    fun setMapObjectCollection(mapObjectCollection: MapObjectCollection)
+
 }

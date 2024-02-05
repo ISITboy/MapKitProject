@@ -50,6 +50,9 @@ dependencies {
 
     //map kit
     implementation ("com.yandex.android:maps.mobile:4.5.0-full")
+    // RxJava
+    implementation ("io.reactivex.rxjava2:rxjava:2.2.7")
+    implementation ("io.reactivex.rxjava2:rxandroid:2.1.1")
 
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.appcompat:appcompat:1.6.1")

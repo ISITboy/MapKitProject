@@ -1,9 +1,11 @@
 package com.example.mapkitresultproject.domain.usecase
 
 import com.example.mapkitresultproject.domain.repository.MapKitCreateRoutRepository
+import com.yandex.mapkit.directions.driving.DrivingRoute
 import com.yandex.mapkit.directions.driving.DrivingRouter
 import com.yandex.mapkit.directions.driving.VehicleType
 import com.yandex.mapkit.geometry.Point
+import com.yandex.mapkit.map.MapObjectCollection
 import javax.inject.Inject
 
 class CreateRouteUseCase @Inject constructor(
@@ -50,5 +52,16 @@ class CreateRouteUseCase @Inject constructor(
     fun getCreateRouteState() = createRoutRepository.getCreateRouteState()
 
     fun getResultedRout() = createRoutRepository.getResultedRout()
+    fun setMapObjectCollection(mapObjectCollection: MapObjectCollection){
+        createRoutRepository.setMapObjectCollection(mapObjectCollection = mapObjectCollection)
+    }
+
+    fun onRoutesUpdated(routes: List<DrivingRoute>) {
+        createRoutRepository.onRoutesUpdated(routes = routes)
+    }
+
+    fun setPointForRoute(point: Point){
+        createRoutRepository.setPointForRoute(point=point)
+    }
 
 }
