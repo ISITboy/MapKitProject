@@ -8,5 +8,6 @@ import com.yandex.mapkit.map.MapObjectCollection
 interface MapKitInteractionMapRepository {
     fun addMapInputListener(map :Map)
     fun getSelectedPoint(): MutableLiveData<Point>
-    fun setMapObjectCollection(mapObjectCollection: MapObjectCollection)
+    fun clearSelectedPointsForCreateRoute()
+    fun setMapObjectPlacemarksCollection(mapObjectCollection: MapObjectCollection)
 }

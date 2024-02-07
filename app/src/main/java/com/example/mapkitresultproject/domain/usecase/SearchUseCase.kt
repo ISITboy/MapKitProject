@@ -13,7 +13,7 @@ class SearchUseCase @Inject constructor(
     private val searchRepository: MapKitSearchRepository
 ) {
 
-    fun setVisibleRegion(region: VisibleRegion) {
+    fun setVisibleRegion(region: VisibleRegion?) {
         searchRepository.setVisibleRegion(region = region)
     }
     fun setSearchManager(searchManager: SearchManager) {
@@ -30,11 +30,12 @@ class SearchUseCase @Inject constructor(
         )
     }
 
-    fun createSession(query: String, geometry: Geometry) {
-        searchRepository.createSession(
-            query = query,
-            geometry = geometry
-        )
+    fun createSession(query: String) {
+        searchRepository.createSession(query = query)
+    }
+
+    fun clearObjectCollection(){
+        searchRepository.clearObjectCollection()
     }
 
     fun setMapObjectCollection(mapObjectCollection: MapObjectCollection) = searchRepository.setMapObjectCollection(

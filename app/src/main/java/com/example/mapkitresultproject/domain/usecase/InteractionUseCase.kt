@@ -11,7 +11,11 @@ class InteractionUseCase @Inject constructor(
 
     fun addMapInputListener(map:Map) = interactionMapRepository.addMapInputListener(map)
     fun getSelectedPoint() = interactionMapRepository.getSelectedPoint()
-    fun setMapObjectCollection(mapObjectCollection: MapObjectCollection) = interactionMapRepository.setMapObjectCollection(
+    fun setMapObjectPlacemarksCollection(mapObjectCollection: MapObjectCollection) = interactionMapRepository.setMapObjectPlacemarksCollection(
         mapObjectCollection = mapObjectCollection
     )
+
+    fun clearSelectedPointsForCreateRoute(){
+        interactionMapRepository.clearSelectedPointsForCreateRoute()
+    }
 }

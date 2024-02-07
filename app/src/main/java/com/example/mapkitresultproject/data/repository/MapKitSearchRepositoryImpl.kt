@@ -1,16 +1,11 @@
 package com.example.mapkitresultproject.data.repository
 
 import android.content.Context
-import androidx.lifecycle.MutableLiveData
 import com.example.mapkitresultproject.R
 import com.example.mapkitresultproject.domain.models.SearchResponseItem
 import com.example.mapkitresultproject.domain.models.SearchState
-import com.example.mapkitresultproject.domain.models.SelectedObjectHolder
 import com.example.mapkitresultproject.domain.repository.MapKitSearchRepository
-import com.example.mapkitresultproject.presentation.detailsscreen.DetailsFragment
-import com.yandex.mapkit.GeoObject
 import com.yandex.mapkit.geometry.BoundingBox
-import com.yandex.mapkit.geometry.Geometry
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.map.IconStyle
 import com.yandex.mapkit.map.MapObjectCollection
@@ -47,10 +42,9 @@ class MapKitSearchRepositoryImpl @Inject constructor(
     private lateinit var searchResultPlacemarkTapListener: MapObjectTapListener
 
     private val region = MutableStateFlow<VisibleRegion?>(null)
+
     @OptIn(FlowPreview::class)
     private val throttledRegion = region.debounce(1.seconds)
-
-
 
     private val searchState = MutableStateFlow<SearchState>(SearchState.Off)
 
@@ -63,7 +57,7 @@ class MapKitSearchRepositoryImpl @Inject constructor(
     override fun getSearchState() = searchState
 
 
-    override fun setVisibleRegion(region: VisibleRegion) {
+    override fun setVisibleRegion(region: VisibleRegion?) {
         this.region.value = region
     }
 
@@ -78,15 +72,14 @@ class MapKitSearchRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun createSession(
-        query: String,
-        geometry: Geometry
-    ) {
-        objectCollection?.clear()
+    override fun createSession(query: String) {
+        val region = region.value?.let {
+            VisibleRegionUtils.toPolygon(it)
+        } ?: return
         searchSession?.cancel()
         searchSession = searchManager.submit(
             query,
-            geometry,
+            region,
             searchOptions,
             searchListener
         )
@@ -100,14 +93,13 @@ class MapKitSearchRepositoryImpl @Inject constructor(
                 val point = it.obj?.geometry?.firstOrNull()?.point ?: return@mapNotNull null
                 SearchResponseItem(point, it.obj)
             }
-            val boundingBox = response.metadata.boundingBox ?: BoundingBox()
+            val boundingBox = response.metadata.boundingBox ?: BoundingBox(Point(0.0, 0.0),Point(90.0, 180.0))
             updateSearchResponsePlacemarks(items)
-            searchState.value =SearchState.Success(
+            searchState.value = SearchState.Success(
                 items = items,
                 zoomToSearchResult,
                 itemsBoundingBox = boundingBox
             )
-            searchState.value = SearchState.Off
         }
 
         override fun onSearchError(error: Error) {
@@ -124,11 +116,11 @@ class MapKitSearchRepositoryImpl @Inject constructor(
     }
 
     override fun setMapObjectCollection(mapObjectCollection: MapObjectCollection) {
-        objectCollection = mapObjectCollection
+        objectCollection = mapObjectCollection.addCollection()
     }
 
     private fun updateSearchResponsePlacemarks(items: List<SearchResponseItem>) {
-
+        clearObjectCollection()
         val imageProvider = ImageProvider.fromResource(context, R.drawable.search_result)
 
         items.forEach {
@@ -143,7 +135,9 @@ class MapKitSearchRepositoryImpl @Inject constructor(
         }
 
     }
-
+    override fun clearObjectCollection(){
+        objectCollection?.clear()
+    }
 
     override fun subscribeForSearch(): Flow<*> {
         return throttledRegion.filter { it != null }

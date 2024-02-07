@@ -15,14 +15,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 interface MapKitSearchRepository {
     fun getSearchState(): MutableStateFlow<SearchState>
-//    fun getResultedPoint(): LiveData<Point>
-    fun setVisibleRegion(region: VisibleRegion)
+
+    //    fun getResultedPoint(): LiveData<Point>
+    fun setVisibleRegion(region: VisibleRegion?)
     fun setSearchManager(searchManager: SearchManager)
     fun setSearchOption(resultPageSize: Int, searchTypes: SearchType)
-    fun createSession(
-        query: String,
-        geometry: Geometry
-    )
+    fun createSession(query: String)
+    fun clearObjectCollection()
     fun setMapObjectTapListener(mapObjectTapListener: MapObjectTapListener)
     fun setMapObjectCollection(mapObjectCollection: MapObjectCollection)
 

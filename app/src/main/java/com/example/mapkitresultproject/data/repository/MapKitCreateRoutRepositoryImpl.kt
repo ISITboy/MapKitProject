@@ -1,10 +1,12 @@
 package com.example.mapkitresultproject.data.repository
 
 import android.content.Context
+import android.util.Log
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.MutableLiveData
 import com.example.mapkitresultproject.R
+import com.example.mapkitresultproject.domain.models.SearchRouteState
 import com.example.mapkitresultproject.domain.models.SearchState
+import com.example.mapkitresultproject.domain.models.SelectedRouteHolder.selectedRoute
 import com.example.mapkitresultproject.domain.repository.MapKitCreateRoutRepository
 import com.yandex.mapkit.RequestPoint
 import com.yandex.mapkit.RequestPointType
@@ -15,7 +17,10 @@ import com.yandex.mapkit.directions.driving.DrivingSession
 import com.yandex.mapkit.directions.driving.VehicleOptions
 import com.yandex.mapkit.directions.driving.VehicleType
 import com.yandex.mapkit.geometry.Point
+import com.yandex.mapkit.map.Map
+import com.yandex.mapkit.map.MapObject
 import com.yandex.mapkit.map.MapObjectCollection
+import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.PolylineMapObject
 import com.yandex.runtime.Error
 import com.yandex.runtime.network.NetworkError
@@ -31,20 +36,19 @@ class MapKitCreateRoutRepositoryImpl @Inject constructor(
     private lateinit var vehicleOptions: VehicleOptions
     private var session: DrivingSession? = null
 
-
     private var pointsForCreateRoute: MutableList<RequestPoint> = mutableListOf()
-    private var resultResponse = MutableLiveData<List<DrivingRoute>>()
 
-    private var routesCollection: MapObjectCollection?=null
+    private var routesCollection: MapObjectCollection? = null
 
-    private val createRouteState = MutableStateFlow<SearchState>(SearchState.Off)
+    private val createRouteState = MutableStateFlow<SearchRouteState>(SearchRouteState.Off)
 
-
-
+    private lateinit var routeTapListener: MapObjectTapListener
+    override fun setRouteTapListener(mapObjectTapListener: MapObjectTapListener) {
+        routeTapListener = mapObjectTapListener
+    }
     override fun setDrivingRouter(drivingRouter: DrivingRouter) {
         this.drivingRouter = drivingRouter
     }
-
     override fun setDrivingOptions(
         routesCount: Int,
         avoidTolls: Boolean,
@@ -58,84 +62,74 @@ class MapKitCreateRoutRepositoryImpl @Inject constructor(
             this.avoidUnpaved = avoidUnpaved
         }
     }
-
     override fun setVehicleOptions(vehicleType: VehicleType, weight: Float) {
         vehicleOptions = VehicleOptions().apply {
-            this.vehicleType = vehicleType
+            this.vehicleType = VehicleType.TRUCK
             this.weight = weight
         }
-
     }
 
     override fun createSessionCreateRoute() {
-        if(pointsForCreateRoute.size>1) {
+        if (pointsForCreateRoute.size > 1) {
             session = drivingRouter.requestRoutes(
-                pointsForCreateRoute,
+                listOf(pointsForCreateRoute[pointsForCreateRoute.size-2],pointsForCreateRoute.last()),
                 drivingOptions,
                 vehicleOptions,
                 drivingSessionCreateRouteListener
             )
-            createRouteState.value = SearchState.Loading
+            createRouteState.value = SearchRouteState.Loading
         }
     }
 
     private val drivingSessionCreateRouteListener = object : DrivingSession.DrivingRouteListener {
         override fun onDrivingRoutes(drivingRoutes: MutableList<DrivingRoute>) {
-            resultResponse.value= drivingRoutes
-            createRouteState.value = SearchState.Off
+            val polyline = drivingRoutes.map { it.geometry }
+            createRouteState.value = SearchRouteState.Success(drivingRoutes, polyline)
+            createRouteState.value = SearchRouteState.Off
 
         }
-
         override fun onDrivingRoutesError(error: Error) {
             when (error) {
-                is NetworkError -> (createRouteState.value as SearchState.Error).message = "Routes request error due network issues"
-                else -> (createRouteState.value as SearchState.Error).message = "Routes request unknown error"
+                is NetworkError -> (createRouteState.value as SearchState.Error).message =
+                    "Routes request error due network issues"
+
+                else -> (createRouteState.value as SearchState.Error).message =
+                    "Routes request unknown error"
             }
 
         }
     }
-
-    override fun setPointsForRoute(points: List<Point>) {
-        this.pointsForCreateRoute = buildList {
-            addAll(points.map {
-                RequestPoint(it, RequestPointType.WAYPOINT, null, null)
-            })
-        }.toMutableList()
-    }
-
     override fun setPointForRoute(point: Point) {
-        this.pointsForCreateRoute.add(RequestPoint(point,RequestPointType.WAYPOINT, null, null))
+        this.pointsForCreateRoute.add(RequestPoint(point, RequestPointType.WAYPOINT, null, "point"))
     }
-
     override fun clearPointsForRoute() {
+        selectedRoute.forEach {
+            if(it?.isValid ==true) it.removeTapListener(routeTapListener)
+        }
+        selectedRoute.clear()
+        clearRoutesCollection()
         pointsForCreateRoute.clear()
     }
-
-    override fun getCreateRouteState() = createRouteState.value
-
-    override fun getResultedRout() = resultResponse
-
-    override fun setMapObjectCollection(mapObjectCollection:MapObjectCollection){
-        routesCollection = mapObjectCollection
+    override fun getCreateRouteState() = createRouteState
+    override fun setMapObjectRoutesCollection(mapObjectCollection: MapObjectCollection) {
+        routesCollection = mapObjectCollection.addCollection()
     }
-
-    override fun onRoutesUpdated(routes: List<DrivingRoute>) {
-        clearRoutesCollection()
+    override fun onRoutesUpdated(map: Map, routes: List<DrivingRoute>) {
         routes.forEachIndexed { index, route ->
-            routesCollection?.addPolyline(route.geometry)?.apply {
+            selectedRoute.add(routesCollection?.addPolyline(route.geometry)?.apply {
+                addTapListener(routeTapListener)
+                userData = route
                 if (index == 0) styleMainRoute() else styleAlternativeRoute()
-            }
+            })
         }
     }
-
     private fun PolylineMapObject.styleMainRoute() {
         zIndex = 10f
         setStrokeColor(ContextCompat.getColor(context, R.color.gray))
         strokeWidth = 5f
-        outlineColor = ContextCompat.getColor(context, R.color.black )
+        outlineColor = ContextCompat.getColor(context, R.color.black)
         outlineWidth = 3f
     }
-
     private fun PolylineMapObject.styleAlternativeRoute() {
         zIndex = 5f
         setStrokeColor(ContextCompat.getColor(context, R.color.light_blue))
@@ -143,7 +137,6 @@ class MapKitCreateRoutRepositoryImpl @Inject constructor(
         outlineColor = ContextCompat.getColor(context, R.color.black)
         outlineWidth = 2f
     }
-
     private fun clearRoutesCollection() {
         routesCollection?.clear()
     }

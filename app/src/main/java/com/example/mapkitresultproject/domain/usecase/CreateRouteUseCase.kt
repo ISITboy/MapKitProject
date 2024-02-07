@@ -5,7 +5,9 @@ import com.yandex.mapkit.directions.driving.DrivingRoute
 import com.yandex.mapkit.directions.driving.DrivingRouter
 import com.yandex.mapkit.directions.driving.VehicleType
 import com.yandex.mapkit.geometry.Point
+import com.yandex.mapkit.map.Map
 import com.yandex.mapkit.map.MapObjectCollection
+import com.yandex.mapkit.map.MapObjectTapListener
 import javax.inject.Inject
 
 class CreateRouteUseCase @Inject constructor(
@@ -41,9 +43,9 @@ class CreateRouteUseCase @Inject constructor(
         createRoutRepository.createSessionCreateRoute()
     }
 
-    fun setPointsForRoute(points: List<Point>) {
-        createRoutRepository.setPointsForRoute(points = points)
-    }
+//    fun setPointsForRoute(points: List<Point>) {
+//        createRoutRepository.setPointsForRoute(points = points)
+//    }
 
     fun clearPointsForRoute() {
         createRoutRepository.clearPointsForRoute()
@@ -51,13 +53,17 @@ class CreateRouteUseCase @Inject constructor(
 
     fun getCreateRouteState() = createRoutRepository.getCreateRouteState()
 
-    fun getResultedRout() = createRoutRepository.getResultedRout()
-    fun setMapObjectCollection(mapObjectCollection: MapObjectCollection){
-        createRoutRepository.setMapObjectCollection(mapObjectCollection = mapObjectCollection)
+//    fun getResultedRout() = createRoutRepository.getResultedRout()
+    fun setMapObjectRoutesCollection(mapObjectCollection: MapObjectCollection){
+        createRoutRepository.setMapObjectRoutesCollection(mapObjectCollection = mapObjectCollection)
+    }
+    fun setRouteTapListener(mapObjectTapListener: MapObjectTapListener){
+        createRoutRepository.setRouteTapListener(mapObjectTapListener)
     }
 
-    fun onRoutesUpdated(routes: List<DrivingRoute>) {
-        createRoutRepository.onRoutesUpdated(routes = routes)
+
+    fun onRoutesUpdated(map: Map, routes: List<DrivingRoute>) {
+        createRoutRepository.onRoutesUpdated(map,routes = routes)
     }
 
     fun setPointForRoute(point: Point){
