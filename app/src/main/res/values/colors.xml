@@ -2,14 +2,17 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="red">#FF0000</color>
-    <color name="blue">#001AFF</color>
+
 
     <color name="gray">#7C7C7C</color>
     <color name="light_blue">#3BB1FF</color>
     <color name="background_search_layout">#FFE2B5</color>
     <color name="background_card_route_info">#B0D1B890</color>
     <color name="background_search_text">#B0E6DAC6</color>
+    <color name="progressbar_color">#FFA200</color>
+    <color name="background_color_error_layout">#B9FF3A3A</color>
+
+
 
 
 </resources>

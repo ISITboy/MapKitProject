@@ -42,25 +42,20 @@ class CreateRouteUseCase @Inject constructor(
     fun createSessionCreateRoute() {
         createRoutRepository.createSessionCreateRoute()
     }
+    fun getPolylinesMapsObjects() = createRoutRepository.getPolylinesMapsObjects()
 
-//    fun setPointsForRoute(points: List<Point>) {
-//        createRoutRepository.setPointsForRoute(points = points)
-//    }
-
-    fun clearPointsForRoute() {
-        createRoutRepository.clearPointsForRoute()
-    }
 
     fun getCreateRouteState() = createRoutRepository.getCreateRouteState()
 
-//    fun getResultedRout() = createRoutRepository.getResultedRout()
     fun setMapObjectRoutesCollection(mapObjectCollection: MapObjectCollection){
         createRoutRepository.setMapObjectRoutesCollection(mapObjectCollection = mapObjectCollection)
     }
     fun setRouteTapListener(mapObjectTapListener: MapObjectTapListener){
         createRoutRepository.setRouteTapListener(mapObjectTapListener)
     }
-
+    fun clearRoutes(){
+        createRoutRepository.clearRoutes()
+    }
 
     fun onRoutesUpdated(map: Map, routes: List<DrivingRoute>) {
         createRoutRepository.onRoutesUpdated(map,routes = routes)

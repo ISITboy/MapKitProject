@@ -116,9 +116,11 @@ class MapViewModel @Inject constructor(
         createRouteUseCase.createSessionCreateRoute()
     }
 
-    fun clearPointsForRoute() {
-        createRouteUseCase.clearPointsForRoute()
+    fun clearRoutes() {
+        createRouteUseCase.clearRoutes()
     }
+    fun getPolylinesMapsObjects() = createRouteUseCase.getPolylinesMapsObjects()
+
 
     fun getCreateRouteState() = createRouteUseCase.getCreateRouteState()
 

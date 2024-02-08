@@ -17,14 +17,6 @@
 
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/floatingActionButtonClearAllObject"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="3dp"
-            android:clickable="true"
-            android:src="@drawable/ic_remove_all_mapobject" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/floatingActionButtonClearPoint"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -11,6 +11,7 @@ import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.map.Map
 import com.yandex.mapkit.map.MapObjectCollection
 import com.yandex.mapkit.map.MapObjectTapListener
+import com.yandex.mapkit.map.PolylineMapObject
 import kotlinx.coroutines.flow.MutableStateFlow
 
 interface MapKitCreateRoutRepository {
@@ -24,10 +25,11 @@ interface MapKitCreateRoutRepository {
     fun setRouteTapListener(mapObjectTapListener: MapObjectTapListener)
     fun setVehicleOptions(vehicleType: VehicleType, weight:Float)
     fun createSessionCreateRoute()
-    fun clearPointsForRoute()
+    fun clearRoutes()
     fun getCreateRouteState(): MutableStateFlow<SearchRouteState>
     fun setMapObjectRoutesCollection(mapObjectCollection: MapObjectCollection)
     fun onRoutesUpdated(map:Map,routes: List<DrivingRoute>)
+    fun getPolylinesMapsObjects(): MutableList<PolylineMapObject?>
 
     fun setPointForRoute(point: Point)
 }

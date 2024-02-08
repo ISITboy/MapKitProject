@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
@@ -103,13 +104,9 @@ class MapKitSearchRepositoryImpl @Inject constructor(
         }
 
         override fun onSearchError(error: Error) {
-            searchState.value = SearchState.Error()
             when (error) {
-                is NetworkError -> (searchState.value as SearchState.Error).message =
-                    "Search request error due network issues"
-
-                else -> (searchState.value as SearchState.Error).message =
-                    "Search request unknown error"
+                is NetworkError -> searchState.value = SearchState.Error("Search request error due network issues")
+                else -> searchState.value = SearchState.Error("Search request unknown error")
             }
         }
 

@@ -7,7 +7,3 @@ import com.yandex.mapkit.map.PolylineMapObject
 object SelectedObjectHolder {
     var selectedObject: GeoObject? = null
 }
-
-object SelectedRouteHolder {
-    var selectedRoute:  MutableList<PolylineMapObject?> = mutableListOf()
-}
