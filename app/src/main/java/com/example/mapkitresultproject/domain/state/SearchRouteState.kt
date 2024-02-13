@@ -1,8 +1,6 @@
-package com.example.mapkitresultproject.domain.models
+package com.example.mapkitresultproject.domain.state
 
 import com.yandex.mapkit.directions.driving.DrivingRoute
-import com.yandex.mapkit.geometry.BoundingBox
-import com.yandex.mapkit.geometry.Geometry
 import com.yandex.mapkit.geometry.Polyline
 
 interface SearchRouteState {

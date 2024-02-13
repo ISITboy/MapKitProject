@@ -18,6 +18,7 @@ import com.yandex.mapkit.map.VisibleRegion
 import com.yandex.mapkit.search.SearchFactory
 import com.yandex.mapkit.search.SearchManager
 import com.yandex.mapkit.search.SearchManagerType
+import com.yandex.mapkit.search.SearchOptions
 import com.yandex.mapkit.search.SearchType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,18 +32,8 @@ class StorageManagerViewModel @Inject constructor(
     private val shipperUsesCases: ShipperUsesCases,
     private val searchUseCase: SearchUseCase
 ) : ViewModel() {
-
-    init {
-        setSearchManager(
-            searchManager = SearchFactory.getInstance()
-                .createSearchManager(SearchManagerType.COMBINED)
-        )
-    }
-    private fun setSearchManager(searchManager: SearchManager) {
-        searchUseCase.setSearchManager(searchManager = searchManager)
-    }
-    fun setSearchOption(resultPageSize:Int, searchType:SearchType = SearchType.BIZ){
-        searchUseCase.setSearchOption(resultPageSize, searchType)
+    fun setSearchOption(searchOptions: SearchOptions){
+        searchUseCase.setSearchOption(searchOptions = searchOptions)
     }
     fun createSearchSession(query:String){
         searchUseCase.createSession(query)

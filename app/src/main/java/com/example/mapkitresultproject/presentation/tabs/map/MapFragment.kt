@@ -1,8 +1,6 @@
 package com.example.mapkitresultproject.presentation.tabs.map
 
 import android.os.Bundle
-import android.text.TextWatcher
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -15,9 +13,12 @@ import androidx.lifecycle.lifecycleScope
 import com.example.mapkitresultproject.R
 import com.example.mapkitresultproject.databinding.FragmentMapBinding
 import com.example.mapkitresultproject.domain.models.CameraPositionBuilder
-import com.example.mapkitresultproject.domain.models.SearchRouteState
-import com.example.mapkitresultproject.domain.models.SearchState
+import com.example.mapkitresultproject.domain.models.DrivingOptionsBuilder
+import com.example.mapkitresultproject.domain.models.SearchOptionBuilder
+import com.example.mapkitresultproject.domain.state.SearchRouteState
+import com.example.mapkitresultproject.domain.state.SearchState
 import com.example.mapkitresultproject.domain.models.SelectedObjectHolder
+import com.example.mapkitresultproject.domain.models.VehicleOptionsBuilder
 import com.example.mapkitresultproject.presentation.tabs.map.details.DetailsFrag
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.yandex.mapkit.Animation
@@ -26,14 +27,11 @@ import com.yandex.mapkit.MapKitFactory
 import com.yandex.mapkit.ScreenPoint
 import com.yandex.mapkit.ScreenRect
 import com.yandex.mapkit.directions.driving.DrivingRoute
-import com.yandex.mapkit.directions.driving.VehicleType
 import com.yandex.mapkit.geometry.Polyline
 import com.yandex.mapkit.map.CameraListener
-import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.map.CameraUpdateReason
 import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.PolylineMapObject
-import com.yandex.mapkit.search.SearchType
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -45,9 +43,6 @@ class MapFragment : Fragment() {
     lateinit var binding: FragmentMapBinding
     private val viewModel: MapViewModel by viewModels()
     private lateinit var animation: com.example.mapkitresultproject.presentation.tabs.map.Animation
-
-
-    private lateinit var editQueryTextWatcher: TextWatcher
 
     private val cameraListener = CameraListener { _, _, finished, _ ->
         // Updating current visible region to apply research on map moved by user gestures.
@@ -103,9 +98,6 @@ class MapFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-
-
         animation = Animation(requireActivity())
         viewModel.map = binding.mapview.map
         viewModel.map.addCameraListener(cameraListener)
@@ -117,20 +109,11 @@ class MapFragment : Fragment() {
         viewModel.getSearchState().flowWithLifecycle(lifecycle)
             .onEach { state ->
                 actionWithStateLoading(state = state)
-
                 if (state is SearchState.Error) actionWithStateError(state)
                 else {
                     hideErrorMessageLayout()
-                    val successSearchState = state as? SearchState.Success
-                    val searchItems = successSearchState?.items ?: emptyList()
-                    if (successSearchState?.zoomToItems == true) {
-                        viewModel.focusCamera(
-                            searchItems.map { item -> item.point },
-                            successSearchState.itemsBoundingBox
-                        )
-                    }
+                    actionWithStateSuccess(state)
                 }
-
             }.launchIn(lifecycleScope)
 
         viewModel.subscribeForSearch().flowWithLifecycle(lifecycle).launchIn(lifecycleScope)
@@ -150,15 +133,7 @@ class MapFragment : Fragment() {
                 if (state is SearchRouteState.Error) actionWithStateError(state)
                 else {
                     hideErrorMessageLayout()
-                    val successSearchRouteState = state as? SearchRouteState.Success
-                    val searchItems = successSearchRouteState?.drivingRoutes ?: emptyList()
-                    viewModel.onRoutesUpdated(viewModel.map, searchItems)
-                    searchItems.forEach { item ->
-                        viewModel.focusCamera(
-                            item.geometry.points,
-                            Polyline(item.geometry.points)
-                        )
-                    }
+                    actionWithStateSuccess(state)
                 }
 
             }.launchIn(lifecycleScope)
@@ -194,23 +169,21 @@ class MapFragment : Fragment() {
         }
         binding.searchButton.setOnClickListener {
             viewModel.setVisibleRegion(viewModel.map.visibleRegion)
-            viewModel.createSession(
-                binding.searchText.text.toString()
-            )
+            viewModel.createSession(binding.searchText.text.toString())
         }
     }
 
     private fun setDependencyForSearchPoint() {
         viewModel.setMapObjectTapListener(searchResultPlacemarkTapListener)
         viewModel.setMapObjectCollection(viewModel.map.mapObjects)
-        viewModel.setSearchOption(15, SearchType.NONE)
+        viewModel.setSearchOption(SearchOptionBuilder().build())
     }
 
     private fun setDependencyForCreateRoute() {
         viewModel.setRouteTapListener(routeTapListener)
         viewModel.setMapObjectRoutesCollection(viewModel.map.mapObjects)
-        viewModel.setDrivingOptions(1)
-        viewModel.setVehicleOptions(VehicleType.TRUCK, 5000f)
+        viewModel.setDrivingOptions(DrivingOptionsBuilder().build())
+        viewModel.setVehicleOptions(VehicleOptionsBuilder().build())
     }
 
     private fun setDependencyForInteractionMap() {
@@ -231,9 +204,9 @@ class MapFragment : Fragment() {
     }
 
     private fun moveToStartLocation() {
-        val startCameraPosition = CameraPositionBuilder().build()
+        val сameraPosition = CameraPositionBuilder().build()
         binding.mapview.map.move(
-            startCameraPosition,
+            сameraPosition,
             Animation(Animation.Type.SMOOTH, 2f), null
         )
     }
@@ -304,6 +277,33 @@ class MapFragment : Fragment() {
         }
     }
 
+    private fun <T> actionWithStateSuccess(state:T) = with(binding){
+        hideErrorMessageLayout()
+        when(state){
+            is SearchState.Success -> {
+                val successSearchState = state as? SearchState.Success
+                val searchItems = successSearchState?.items ?: emptyList()
+                if (successSearchState?.zoomToItems == true) {
+                    viewModel.focusCamera(
+                        searchItems.map { item -> item.point },
+                        successSearchState.itemsBoundingBox
+                    )
+                }
+            }
+            is SearchRouteState.Success ->{
+                val successSearchRouteState = state as? SearchRouteState.Success
+                val searchItems = successSearchRouteState?.drivingRoutes ?: emptyList()
+                viewModel.onRoutesUpdated(searchItems)
+                searchItems.forEach { item ->
+                    viewModel.focusCamera(
+                        item.geometry.points,
+                        Polyline(item.geometry.points)
+                    )
+                }
+            }
+        }
+    }
+
     private fun startLoadingIndicatorAnimations() {
         binding.loadingIndicator.visibility = View.VISIBLE
         renderAnimations(initialAlpha = 0f, finalAlpha = 1f)
@@ -336,11 +336,5 @@ class MapFragment : Fragment() {
             pedestrianCrossingsSize.toString()
         binding.slidingLayout.findViewById<TextView>(R.id.speedBumpsTextView).text =
             speedBumpsSize.toString()
-    }
-
-
-    companion object {
-        const val REQUEST_CODE = "mapObject"
-        const val EXTRA_GEOOBJECT = "GeoObject"
     }
 }

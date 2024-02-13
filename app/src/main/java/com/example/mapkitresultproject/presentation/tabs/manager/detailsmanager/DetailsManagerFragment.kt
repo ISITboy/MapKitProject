@@ -1,40 +1,29 @@
 package com.example.mapkitresultproject.presentation.tabs.manager.detailsmanager
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.core.os.bundleOf
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.navOptions
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mapkitresultproject.R
-import com.example.mapkitresultproject.Utils.findTopNavController
-import com.example.mapkitresultproject.Utils.getCoordinates
 import com.example.mapkitresultproject.databinding.FragmentDetailsManagerBinding
-import com.example.mapkitresultproject.domain.models.SearchState
+import com.example.mapkitresultproject.domain.models.SearchOptionBuilder
+import com.example.mapkitresultproject.domain.state.SearchState
 import com.example.mapkitresultproject.presentation.tabs.manager.detailsmanager.adapter.ConsigneeItemsAdapter
 import com.example.mapkitresultproject.presentation.tabs.manager.detailsmanager.adapter.ShipperItemsAdapter
-import com.yandex.mapkit.geometry.Point
+import com.yandex.mapkit.search.SearchOptions
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import java.util.LinkedList
 import java.util.Queue
 
@@ -46,7 +35,6 @@ class DetailsManagerFragment : Fragment(R.layout.fragment_details_manager) {
     private val viewModel: StorageManagerViewModel by activityViewModels()
     private val shipperItemAdapter by lazy { ShipperItemsAdapter(viewModel) }
     private val consigneeItemAdapter by lazy { ConsigneeItemsAdapter(viewModel) }
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -83,7 +71,7 @@ class DetailsManagerFragment : Fragment(R.layout.fragment_details_manager) {
             )
         }
         viewModel.setVisibleRegion()
-        viewModel.setSearchOption(1)
+        viewModel.setSearchOption(SearchOptionBuilder().build().setResultPageSize(1))
 
         val addressed = mutableListOf<Double>()
 
@@ -97,12 +85,7 @@ class DetailsManagerFragment : Fragment(R.layout.fragment_details_manager) {
                     addressed.add(searchItems.first().point.latitude)
 
                     if (addressed.size == (viewModel.getConsignee().value!!.size + viewModel.getShipper().value!!.size) * 2) {
-                        Log.d("MyLog", "addressed.size = ${addressed.size}")
-                        Log.d("MyLog", "addresses = ${addressed}")
-                        val r = addressed
-                        val bundle = Bundle()
-                        bundle.putDoubleArray("k", addressed.toDoubleArray())
-                        requireActivity().supportFragmentManager.setFragmentResult("RR", bundle)
+                        requireActivity().supportFragmentManager.setFragmentResult("RR", bundleOf("k" to addressed.toDoubleArray()))
                         findNavController().popBackStack()
                     }
                 }
@@ -118,6 +101,7 @@ class DetailsManagerFragment : Fragment(R.layout.fragment_details_manager) {
             viewModel.createSession(items)
         }
     }
+
 
     private fun initRecyclerViews() = with(binding) {
         shipperRecyclerView.apply {

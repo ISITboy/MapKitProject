@@ -1,8 +1,10 @@
 package com.example.mapkitresultproject.domain.usecase.mapkitusescases
 
 import com.example.mapkitresultproject.domain.repository.MapKitCreateRoutRepository
+import com.yandex.mapkit.directions.driving.DrivingOptions
 import com.yandex.mapkit.directions.driving.DrivingRoute
 import com.yandex.mapkit.directions.driving.DrivingRouter
+import com.yandex.mapkit.directions.driving.VehicleOptions
 import com.yandex.mapkit.directions.driving.VehicleType
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.map.Map
@@ -13,30 +15,12 @@ import javax.inject.Inject
 class CreateRouteUseCase @Inject constructor(
     private val createRoutRepository: MapKitCreateRoutRepository
 ) {
-    fun setDrivingRouter(drivingRouter: DrivingRouter) {
-        createRoutRepository.setDrivingRouter(
-            drivingRouter = drivingRouter
-        )
+    fun setDrivingOptions(drivingOptions : DrivingOptions) {
+        createRoutRepository.setDrivingOptions(drivingOptions = drivingOptions)
     }
 
-    fun setDrivingOptions(
-        routesCount: Int,
-        avoidTolls: Boolean,
-        avoidPoorConditions: Boolean,
-        avoidUnpaved: Boolean
-    ) {
-        createRoutRepository.setDrivingOptions(
-            routesCount = routesCount,
-            avoidTolls = avoidTolls,
-            avoidPoorConditions = avoidPoorConditions,
-            avoidUnpaved = avoidUnpaved
-        )
-    }
-
-    fun setVehicleOptions(vehicleType: VehicleType, weight: Float) {
-        createRoutRepository.setVehicleOptions(
-            vehicleType = vehicleType, weight = weight
-        )
+    fun setVehicleOptions(vehicleOptions: VehicleOptions) {
+        createRoutRepository.setVehicleOptions(vehicleOptions = vehicleOptions)
     }
 
     fun createSessionCreateRoute() {
@@ -57,8 +41,8 @@ class CreateRouteUseCase @Inject constructor(
         createRoutRepository.clearRoutes()
     }
 
-    fun onRoutesUpdated(map: Map, routes: List<DrivingRoute>) {
-        createRoutRepository.onRoutesUpdated(map,routes = routes)
+    fun onRoutesUpdated(routes: List<DrivingRoute>) {
+        createRoutRepository.onRoutesUpdated(routes = routes)
     }
 
     fun setPointForRoute(point: Point){

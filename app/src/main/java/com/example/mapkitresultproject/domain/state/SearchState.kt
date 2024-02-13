@@ -1,4 +1,4 @@
-package com.example.mapkitresultproject.domain.models
+package com.example.mapkitresultproject.domain.state
 
 import com.yandex.mapkit.GeoObject
 import com.yandex.mapkit.geometry.BoundingBox

@@ -7,9 +7,11 @@ import com.example.mapkitresultproject.domain.usecase.mapkitusescases.Interactio
 import com.example.mapkitresultproject.domain.usecase.mapkitusescases.SearchUseCase
 import com.yandex.mapkit.Animation
 import com.yandex.mapkit.directions.DirectionsFactory
+import com.yandex.mapkit.directions.driving.DrivingOptions
 import com.yandex.mapkit.directions.driving.DrivingRoute
 import com.yandex.mapkit.directions.driving.DrivingRouter
 import com.yandex.mapkit.directions.driving.DrivingRouterType
+import com.yandex.mapkit.directions.driving.VehicleOptions
 import com.yandex.mapkit.directions.driving.VehicleType
 import com.yandex.mapkit.geometry.BoundingBox
 import com.yandex.mapkit.geometry.Geometry
@@ -23,6 +25,7 @@ import com.yandex.mapkit.map.VisibleRegion
 import com.yandex.mapkit.search.SearchFactory
 import com.yandex.mapkit.search.SearchManager
 import com.yandex.mapkit.search.SearchManagerType
+import com.yandex.mapkit.search.SearchOptions
 import com.yandex.mapkit.search.SearchType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -37,33 +40,17 @@ class MapViewModel @Inject constructor(
     private val interactionUseCase: InteractionUseCase
 ) : ViewModel() {
 
-    init {
-        setSearchManager(
-            searchManager = SearchFactory.getInstance()
-                .createSearchManager(SearchManagerType.COMBINED)
-        )
-        setDrivingRouter(
-            drivingRouter = DirectionsFactory.getInstance()
-                .createDrivingRouter(DrivingRouterType.COMBINED)
-        )
-    }
 
     lateinit var map: Map
 
 
 //    Start SearchRepository Dependency
-    private fun setSearchManager(searchManager: SearchManager) {
-        searchUseCase.setSearchManager(searchManager = searchManager)
-    }
-
     fun setVisibleRegion(region: VisibleRegion?) {
         searchUseCase.setVisibleRegion(region)
     }
 
-    fun setSearchOption(resultPageSize: Int, searchTypes: SearchType) {
-        searchUseCase.setSearchOption(
-            resultPageSize = resultPageSize, searchTypes = searchTypes
-        )
+    fun setSearchOption(searchOptions: SearchOptions) {
+        searchUseCase.setSearchOption(searchOptions = searchOptions)
     }
 
     fun createSession(query: String) = searchUseCase.createSession(query = query)
@@ -84,28 +71,12 @@ class MapViewModel @Inject constructor(
 
 
     //    Start CreateRouteRepository Dependency
-    private fun setDrivingRouter(drivingRouter: DrivingRouter) {
-        createRouteUseCase.setDrivingRouter(drivingRouter = drivingRouter)
+    fun setDrivingOptions(drivingOptions : DrivingOptions) {
+        createRouteUseCase.setDrivingOptions(drivingOptions = drivingOptions)
     }
 
-    fun setDrivingOptions(
-        routesCount: Int,
-        avoidTolls: Boolean = true,
-        avoidPoorConditions: Boolean = true,
-        avoidUnpaved: Boolean = true
-    ) {
-        createRouteUseCase.setDrivingOptions(
-            routesCount = routesCount,
-            avoidTolls = avoidTolls,
-            avoidPoorConditions = avoidPoorConditions,
-            avoidUnpaved = avoidUnpaved
-        )
-    }
-
-    fun setVehicleOptions(vehicleType: VehicleType, weight: Float) {
-        createRouteUseCase.setVehicleOptions(
-            vehicleType = vehicleType, weight = weight
-        )
+    fun setVehicleOptions(vehicleOptions: VehicleOptions) {
+        createRouteUseCase.setVehicleOptions(vehicleOptions = vehicleOptions)
     }
 
     fun setRouteTapListener(mapObjectTapListener:MapObjectTapListener){
@@ -128,8 +99,8 @@ class MapViewModel @Inject constructor(
     fun setMapObjectRoutesCollection(mapObjectCollection: MapObjectCollection){
         createRouteUseCase.setMapObjectRoutesCollection(mapObjectCollection = mapObjectCollection)
     }
-    fun onRoutesUpdated(map:Map,routes: List<DrivingRoute>){
-        createRouteUseCase.onRoutesUpdated(map,routes = routes)
+    fun onRoutesUpdated(routes: List<DrivingRoute>){
+        createRouteUseCase.onRoutesUpdated(routes = routes)
     }
     fun setPointForRoute(point: Point) {
         createRouteUseCase.setPointForRoute(point = point)

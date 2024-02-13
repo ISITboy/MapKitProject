@@ -6,6 +6,7 @@ import com.yandex.mapkit.map.MapObjectCollection
 import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.VisibleRegion
 import com.yandex.mapkit.search.SearchManager
+import com.yandex.mapkit.search.SearchOptions
 import com.yandex.mapkit.search.SearchType
 import java.util.Queue
 import javax.inject.Inject
@@ -17,18 +18,12 @@ class SearchUseCase @Inject constructor(
     fun setVisibleRegion(region: VisibleRegion?) {
         searchRepository.setVisibleRegion(region = region)
     }
-    fun setSearchManager(searchManager: SearchManager) {
-        searchRepository.setSearchManager(searchManager = searchManager)
-    }
     fun getSearchState() = searchRepository.getSearchState()
 
 //    fun getResultedPoint() = searchRepository.getResultedPoint()
 
-    fun setSearchOption(resultPageSize: Int, searchTypes: SearchType) {
-        searchRepository.setSearchOption(
-            resultPageSize = resultPageSize,
-            searchTypes = searchTypes
-        )
+    fun setSearchOption(searchOptions: SearchOptions) {
+        searchRepository.setSearchOption(searchOptions = searchOptions)
     }
 
     fun createSession(query: String) {

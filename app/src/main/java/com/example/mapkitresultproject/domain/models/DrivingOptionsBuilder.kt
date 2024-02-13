@@ -1,18 +1,17 @@
 package com.example.mapkitresultproject.domain.models
 
-data class DrivingOptions (
-    val routesCount : Int?,
-    val avoidTolls : Boolean?,
-    val avoidUnpaved :Boolean?,
-    val avoidPoorConditions:Boolean?
-)
+import com.yandex.mapkit.annotations.AnnotationLanguage
+import com.yandex.mapkit.directions.driving.DrivingOptions
 
 class DrivingOptionsBuilder{
 
-    var routesCount:Int? = 1
-    var avoidTolls :Boolean? = null
-    var avoidUnpaved :Boolean? = null
-    var avoidPoorConditions :Boolean?= null
+    private var routesCount:Int? = 1
+    private var avoidTolls :Boolean? = null
+    private var avoidUnpaved :Boolean? = null
+    private var avoidPoorConditions :Boolean?= null
+    private var initialAzimuth :Double? = null
+    private var departureTime : Long? = null
+    private var annotationLanguage :AnnotationLanguage? = null
 
     fun setRoutesCount(value: Int?):DrivingOptionsBuilder{
         this.routesCount = value
@@ -34,10 +33,13 @@ class DrivingOptionsBuilder{
     }
 
     fun build() = DrivingOptions(
-        routesCount = routesCount,
-        avoidTolls = avoidTolls,
-        avoidUnpaved = avoidUnpaved,
-        avoidPoorConditions= avoidPoorConditions
+        initialAzimuth,
+        routesCount,
+        avoidTolls,
+        avoidUnpaved,
+        avoidPoorConditions,
+        departureTime,
+        annotationLanguage
     )
 
 

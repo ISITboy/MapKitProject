@@ -29,6 +29,7 @@ import com.example.mapkitresultproject.domain.usecase.shipper.DeleteShipperUseCa
 import com.example.mapkitresultproject.domain.usecase.shipper.GetAllShippersUseCase
 import com.example.mapkitresultproject.domain.usecase.shipper.GetShipperUseCase
 import com.example.mapkitresultproject.domain.usecase.shipper.InsertShipperUseCase
+import com.yandex.mapkit.map.Map
 import dagger.Component.Factory
 import dagger.Module
 import dagger.Provides
@@ -144,5 +145,4 @@ object AppModule {
     @Singleton
     @Provides
     fun providesPostService(retrofit: Retrofit) = retrofit.create(RoutesApi::class.java)
-
 }

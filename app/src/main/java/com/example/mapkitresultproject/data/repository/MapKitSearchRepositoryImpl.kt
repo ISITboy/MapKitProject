@@ -2,8 +2,9 @@ package com.example.mapkitresultproject.data.repository
 
 import android.content.Context
 import com.example.mapkitresultproject.R
-import com.example.mapkitresultproject.domain.models.SearchResponseItem
-import com.example.mapkitresultproject.domain.models.SearchState
+import com.example.mapkitresultproject.domain.models.SearchOptionBuilder
+import com.example.mapkitresultproject.domain.state.SearchResponseItem
+import com.example.mapkitresultproject.domain.state.SearchState
 import com.example.mapkitresultproject.domain.repository.MapKitSearchRepository
 import com.yandex.mapkit.geometry.BoundingBox
 import com.yandex.mapkit.geometry.Geometry
@@ -14,7 +15,9 @@ import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.VisibleRegion
 import com.yandex.mapkit.map.VisibleRegionUtils
 import com.yandex.mapkit.search.Response
+import com.yandex.mapkit.search.SearchFactory
 import com.yandex.mapkit.search.SearchManager
+import com.yandex.mapkit.search.SearchManagerType
 import com.yandex.mapkit.search.SearchOptions
 import com.yandex.mapkit.search.SearchType
 import com.yandex.mapkit.search.Session
@@ -30,7 +33,6 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.Queue
@@ -41,8 +43,9 @@ class MapKitSearchRepositoryImpl @Inject constructor(
     private val context: Context
 ) : MapKitSearchRepository {
 
-    private lateinit var searchManager: SearchManager
-    private lateinit var searchOptions: SearchOptions
+    private val searchManager = SearchFactory.getInstance()
+        .createSearchManager(SearchManagerType.COMBINED)
+    private var searchOptions = SearchOptionBuilder().build()
     private var searchSession: Session? = null
 
     private var objectCollection: MapObjectCollection? = null
@@ -67,16 +70,8 @@ class MapKitSearchRepositoryImpl @Inject constructor(
     override fun setVisibleRegion(region: VisibleRegion?) {
         this.region.value = region
     }
-
-    override fun setSearchManager(searchManager: SearchManager) {
-        this.searchManager = searchManager
-    }
-
-    override fun setSearchOption(resultPageSize: Int, searchTypes: SearchType) {
-        searchOptions = SearchOptions().apply {
-            this.resultPageSize = resultPageSize
-            this.searchTypes = searchTypes.value
-        }
+    override fun setSearchOption(searchOptions: SearchOptions) {
+        this.searchOptions = searchOptions
     }
 
     override fun createSession(query: String) {

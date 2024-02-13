@@ -3,7 +3,9 @@ package com.example.mapkitresultproject.data.repository
 import android.content.Context
 import androidx.core.content.ContextCompat
 import com.example.mapkitresultproject.R
-import com.example.mapkitresultproject.domain.models.SearchRouteState
+import com.example.mapkitresultproject.domain.models.DrivingOptionsBuilder
+import com.example.mapkitresultproject.domain.state.SearchRouteState
+import com.example.mapkitresultproject.domain.models.VehicleOptionsBuilder
 import com.example.mapkitresultproject.domain.repository.MapKitCreateRoutRepository
 import com.yandex.mapkit.RequestPoint
 import com.yandex.mapkit.RequestPointType
@@ -14,14 +16,10 @@ import com.yandex.mapkit.directions.driving.DrivingRouter
 import com.yandex.mapkit.directions.driving.DrivingRouterType
 import com.yandex.mapkit.directions.driving.DrivingSession
 import com.yandex.mapkit.directions.driving.VehicleOptions
-import com.yandex.mapkit.directions.driving.VehicleType
 import com.yandex.mapkit.geometry.Point
-import com.yandex.mapkit.map.Map
 import com.yandex.mapkit.map.MapObjectCollection
 import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.PolylineMapObject
-import com.yandex.mapkit.search.SearchFactory
-import com.yandex.mapkit.search.SearchManagerType
 import com.yandex.runtime.Error
 import com.yandex.runtime.network.NetworkError
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,8 +31,8 @@ class MapKitCreateRoutRepositoryImpl @Inject constructor(
 
     private val drivingRouter: DrivingRouter = DirectionsFactory.getInstance()
         .createDrivingRouter(DrivingRouterType.COMBINED)
-    private lateinit var drivingOptions: DrivingOptions
-    private lateinit var vehicleOptions: VehicleOptions
+    private var drivingOptions = DrivingOptionsBuilder().build()
+    private var vehicleOptions = VehicleOptionsBuilder().build()
     private var session: DrivingSession? = null
 
     private var requestedPoints: MutableList<RequestPoint> = mutableListOf()
@@ -51,30 +49,12 @@ class MapKitCreateRoutRepositoryImpl @Inject constructor(
         routeTapListener = mapObjectTapListener
     }
 
-    override fun setDrivingRouter(drivingRouter: DrivingRouter) {
-        this.drivingRouter = drivingRouter
+    override fun setDrivingOptions(drivingOptions : DrivingOptions) {
+        this.drivingOptions = drivingOptions
     }
 
-    override fun setDrivingOptions(
-        routesCount: Int,
-        avoidTolls: Boolean,
-        avoidPoorConditions: Boolean,
-        avoidUnpaved: Boolean
-    ) {
-        drivingOptions = DrivingOptions().apply {
-            this.routesCount = routesCount
-            this.avoidTolls = avoidTolls
-            this.avoidPoorConditions = avoidPoorConditions
-            this.avoidUnpaved = avoidUnpaved
-        }
-    }
-
-    override fun setVehicleOptions(vehicleType: VehicleType, weight: Float) {
-        vehicleOptions = VehicleOptions().apply {
-            this.vehicleType = vehicleType
-            this.weight = weight
-
-        }
+    override fun setVehicleOptions(vehicleOptions: VehicleOptions) {
+        this.vehicleOptions = vehicleOptions
     }
 
     override fun createSessionCreateRoute() {
@@ -128,7 +108,7 @@ class MapKitCreateRoutRepositoryImpl @Inject constructor(
         routesCollection = mapObjectCollection.addCollection()
     }
 
-    override fun onRoutesUpdated(map: Map, routes: List<DrivingRoute>) {
+    override fun onRoutesUpdated(routes: List<DrivingRoute>) {
         routes.forEachIndexed { index, route ->
             this.polylinesMapsObjects.add(routesCollection?.addPolyline(route.geometry)?.apply {
                 addTapListener(routeTapListener)
