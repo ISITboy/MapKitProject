@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@id/manager"
+        android:title="Manager"
+        android:icon="@drawable/ic_manager"/>
+
+    <item android:id="@id/map"
+        android:title="Map"
+        android:icon="@drawable/ic_map"/>
+
+    <item android:id="@id/profile"
+        android:title="Profile"
+        android:icon="@drawable/ic_account"/>
+</menu>

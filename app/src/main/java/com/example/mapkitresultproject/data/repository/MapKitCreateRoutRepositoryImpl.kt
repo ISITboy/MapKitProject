@@ -7,9 +7,11 @@ import com.example.mapkitresultproject.domain.models.SearchRouteState
 import com.example.mapkitresultproject.domain.repository.MapKitCreateRoutRepository
 import com.yandex.mapkit.RequestPoint
 import com.yandex.mapkit.RequestPointType
+import com.yandex.mapkit.directions.DirectionsFactory
 import com.yandex.mapkit.directions.driving.DrivingOptions
 import com.yandex.mapkit.directions.driving.DrivingRoute
 import com.yandex.mapkit.directions.driving.DrivingRouter
+import com.yandex.mapkit.directions.driving.DrivingRouterType
 import com.yandex.mapkit.directions.driving.DrivingSession
 import com.yandex.mapkit.directions.driving.VehicleOptions
 import com.yandex.mapkit.directions.driving.VehicleType
@@ -18,6 +20,8 @@ import com.yandex.mapkit.map.Map
 import com.yandex.mapkit.map.MapObjectCollection
 import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.PolylineMapObject
+import com.yandex.mapkit.search.SearchFactory
+import com.yandex.mapkit.search.SearchManagerType
 import com.yandex.runtime.Error
 import com.yandex.runtime.network.NetworkError
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +31,8 @@ class MapKitCreateRoutRepositoryImpl @Inject constructor(
     private val context: Context
 ) : MapKitCreateRoutRepository {
 
-    private lateinit var drivingRouter: DrivingRouter
+    private val drivingRouter: DrivingRouter = DirectionsFactory.getInstance()
+        .createDrivingRouter(DrivingRouterType.COMBINED)
     private lateinit var drivingOptions: DrivingOptions
     private lateinit var vehicleOptions: VehicleOptions
     private var session: DrivingSession? = null
@@ -68,6 +73,7 @@ class MapKitCreateRoutRepositoryImpl @Inject constructor(
         vehicleOptions = VehicleOptions().apply {
             this.vehicleType = vehicleType
             this.weight = weight
+
         }
     }
 

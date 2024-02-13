@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Установите фон заставки, анимированный значок и продолжительность анимации. -->
+        <item  name = "windowSplashScreenBackground">@color/background_splash_screen </item>
+
+        <!-- Используйте windowSplashScreenAnimatedIcon, чтобы добавить рисуемый илианимированный объект. Требуется один из них. -->
+
+        <item  name = "windowSplashScreenAnimatedIcon"> @drawable/splash1 </item>
+        <!-- Требуется для анимированных значков -->
+<!--        <item  name = "windowSplashScreenAnimatedIcon" > 200 </ item >-->
+
+        <!-- Установить тема Действия, которая следует непосредственно за заставкой. -->
+        <!-- Обязательно -->
+        <item  name = "postSplashScreenTheme" > @style/Theme.MapKitResultProject </item>
+    </style>
+</resources>

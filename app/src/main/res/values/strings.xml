@@ -2,4 +2,28 @@
     <string name="app_name">MapKitResultProject</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+
+    <!--    signIn fragment-->
+    <string name="authorization_header">Authorization</string>
+    <string name="enter_username">Enter User Name</string>
+    <string name="enter_password">Enter Password</string>
+    <string name="sign_in">Sign In</string>
+    <string name="sign_up">Sign Up</string>
+
+    <!--    signUp fragment-->
+    <string name="sign_up_header">Sign Up</string>
+    <string name="enter_firstname">Enter FirstName</string>
+    <string name="enter_lastname">Enter LastName</string>
+    <string name="enter_age">Enter Age</string>
+    <string name="enter_email">Enter Email</string>
+    <string name="enter_phone">Enter Phone</string>
+    <string name="male">male</string>
+    <string name="female">female</string>
+    <string name="enter_birth_date">Enter Birthdate</string>
+
+
+    <string name="shipper">Грузоотправители</string>
+    <string name="consignees">Грузополучатели</string>
+    <string name="route">Маршрут</string>
 </resources>

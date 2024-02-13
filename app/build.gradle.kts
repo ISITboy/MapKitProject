@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    id("androidx.navigation.safeargs.kotlin")
 }
 
 android {
@@ -42,6 +43,32 @@ android {
 }
 
 dependencies {
+
+    //Retrofit
+
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation ("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.9.0")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.4.0-alpha04")
+
+    //Room
+    val room_version = "2.6.0"
+    implementation("androidx.room:room-runtime:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+    kapt("androidx.room:room-compiler:2.6.0")
+
+    //jetpack navigation component
+    val nav_version = "2.7.6"
+    implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
+    implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
+    implementation ("androidx.fragment:fragment-ktx:1.6.2")
+
+
+    //Splash Api
+    implementation("androidx.core:core-splashscreen:1.1.0-alpha02")
+
     //Dagger Hilt
     val hilt_version = "2.48"
     implementation("com.google.dagger:hilt-android:$hilt_version")

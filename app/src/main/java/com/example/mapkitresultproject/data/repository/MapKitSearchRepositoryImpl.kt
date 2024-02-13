@@ -6,6 +6,7 @@ import com.example.mapkitresultproject.domain.models.SearchResponseItem
 import com.example.mapkitresultproject.domain.models.SearchState
 import com.example.mapkitresultproject.domain.repository.MapKitSearchRepository
 import com.yandex.mapkit.geometry.BoundingBox
+import com.yandex.mapkit.geometry.Geometry
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.map.IconStyle
 import com.yandex.mapkit.map.MapObjectCollection
@@ -20,6 +21,8 @@ import com.yandex.mapkit.search.Session
 import com.yandex.runtime.Error
 import com.yandex.runtime.image.ImageProvider
 import com.yandex.runtime.network.NetworkError
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +31,9 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import java.util.Queue
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
@@ -51,7 +57,7 @@ class MapKitSearchRepositoryImpl @Inject constructor(
 
     private var zoomToSearchResult = false
 
-    override fun setMapObjectTapListener(mapObjectTapListener:MapObjectTapListener){
+    override fun setMapObjectTapListener(mapObjectTapListener: MapObjectTapListener) {
         searchResultPlacemarkTapListener = mapObjectTapListener
     }
 
@@ -69,7 +75,7 @@ class MapKitSearchRepositoryImpl @Inject constructor(
     override fun setSearchOption(resultPageSize: Int, searchTypes: SearchType) {
         searchOptions = SearchOptions().apply {
             this.resultPageSize = resultPageSize
-            this.searchTypes =  searchTypes.value
+            this.searchTypes = searchTypes.value
         }
     }
 
@@ -88,13 +94,40 @@ class MapKitSearchRepositoryImpl @Inject constructor(
         zoomToSearchResult = true
     }
 
+    override fun createSession(query: Queue<String>) {
+        CoroutineScope(Dispatchers.IO).launch {
+            while (query.isNotEmpty()) {
+                if (searchState.value !is SearchState.Loading) {
+                    query.poll()?.let {
+                        runBlocking(Dispatchers.Main) {
+                            searchManager.submit(
+                                it,
+                                Geometry.fromBoundingBox(
+                                    BoundingBox(
+                                        Point(0.0, 0.0),
+                                        Point(90.0, 180.0)
+                                    )
+                                ),
+                                searchOptions,
+                                searchListener
+                            )
+                            searchState.value = SearchState.Loading
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
     private val searchListener = object : Session.SearchListener {
         override fun onSearchResponse(response: Response) {
             val items = response.collection.children.mapNotNull {
                 val point = it.obj?.geometry?.firstOrNull()?.point ?: return@mapNotNull null
                 SearchResponseItem(point, it.obj)
             }
-            val boundingBox = response.metadata.boundingBox ?: BoundingBox(Point(0.0, 0.0),Point(90.0, 180.0))
+            val boundingBox =
+                response.metadata.boundingBox ?: BoundingBox(Point(0.0, 0.0), Point(90.0, 180.0))
             updateSearchResponsePlacemarks(items)
             searchState.value = SearchState.Success(
                 items = items,
@@ -105,7 +138,9 @@ class MapKitSearchRepositoryImpl @Inject constructor(
 
         override fun onSearchError(error: Error) {
             when (error) {
-                is NetworkError -> searchState.value = SearchState.Error("Search request error due network issues")
+                is NetworkError -> searchState.value =
+                    SearchState.Error("Search request error due network issues")
+
                 else -> searchState.value = SearchState.Error("Search request unknown error")
             }
         }
@@ -132,7 +167,8 @@ class MapKitSearchRepositoryImpl @Inject constructor(
         }
 
     }
-    override fun clearObjectCollection(){
+
+    override fun clearObjectCollection() {
         objectCollection?.clear()
     }
 

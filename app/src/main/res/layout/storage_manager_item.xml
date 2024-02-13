@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="3dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardCornerRadius="5dp">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:background="@color/card_view_item_background"
+        android:padding="3dp"
+        android:weightSum="3">
+
+        <TextView
+            android:id="@+id/textAddress"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:textSize="15sp"
+            android:textColor="@color/white"
+            android:layout_weight="2"
+            android:text="ул. Дубко 20, Гродно" />
+
+        <TextView
+            android:id="@+id/textVolume"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:textSize="15sp"
+            android:gravity="center"
+            android:textColor="@color/white" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:id="@+id/rootContainer"
+    android:background="@color/main_layout_background"
+    tools:context=".presentation.screens.storagemanager.AddManagerStorageItemFragment">
+
+    <ImageView
+        android:id="@+id/imgClose"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:src="@drawable/ic_close"
+        app:layout_constraintBottom_toTopOf="@id/AddressCard"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/AddressCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="5dp"
+        app:cardElevation="5dp"
+        app:layout_constraintBottom_toTopOf="@id/volumeCard"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/imgClose">
+
+        <EditText
+            android:id="@+id/edtAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+            android:background="@android:color/transparent"
+            android:hint="Введите адрес"
+            android:inputType="text|textPersonName|textMultiLine"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/volumeCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:maxLines="1"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="5dp"
+        app:cardElevation="5dp"
+        app:layout_constraintBottom_toTopOf="@+id/btnSave"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/AddressCard"
+        tools:layout_editor_absoluteX="8dp">
+
+        <EditText
+            android:id="@+id/edtVolume"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+            android:background="@android:color/transparent"
+            android:hint="Введите объем груза (кг)"
+            android:inputType="text|textPersonName|textMultiLine"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+    </androidx.cardview.widget.CardView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnSave"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="16dp"
+        android:src="@drawable/ic_add"
+        android:text="Save"
+        android:textColor="@color/white"
+        app:backgroundTint="#4CAF50"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/volumeCard"
+        app:layout_constraintTop_toBottomOf="@id/volumeCard"
+        app:tint="@color/white" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

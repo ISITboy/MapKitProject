@@ -12,6 +12,7 @@ import com.yandex.mapkit.search.SearchManager
 import com.yandex.mapkit.search.SearchType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import java.util.Queue
 
 interface MapKitSearchRepository {
     fun getSearchState(): MutableStateFlow<SearchState>
@@ -22,6 +23,7 @@ interface MapKitSearchRepository {
     fun setSearchOption(resultPageSize: Int, searchTypes: SearchType)
     fun createSession(query: String)
     fun clearObjectCollection()
+    fun createSession(query: Queue<String>)
     fun setMapObjectTapListener(mapObjectTapListener: MapObjectTapListener)
     fun setMapObjectCollection(mapObjectCollection: MapObjectCollection)
 

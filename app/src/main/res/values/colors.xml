@@ -12,7 +12,21 @@
     <color name="progressbar_color">#FFA200</color>
     <color name="background_color_error_layout">#B9FF3A3A</color>
 
+    <color name="background_splash_screen">#FFE7BD</color>
+    <color name="splash_color">#FFA200</color>
 
+    <color name="background_splash_start">#81FF4D</color>
+    <color name="background_splash_end">#BADCAD</color>
+    <color name="background_sign_in_button">#92D875</color>
+
+
+    <color name="main_layout_background">#8597FF</color>
+    <color name="card_view_background">#A7B4FF</color>
+    <color name="card_view_item_background">#8597FF</color>
+
+
+
+    <color name="base_theme">#45BC14</color>
 
 
 </resources>

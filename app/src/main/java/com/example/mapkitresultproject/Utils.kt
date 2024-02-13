@@ -4,6 +4,10 @@ import android.content.Context
 import android.view.View
 import android.widget.Toast
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.findNavController
 import com.yandex.mapkit.geometry.Point
 
 object Utils {
@@ -21,5 +25,10 @@ object Utils {
     }
 
     fun <T> List<T>.takeIfNotEmpty(): List<T>? = takeIf { it.isNotEmpty() }
+
+    fun Fragment.findTopNavController(): NavController {
+        val topLevelHost = requireActivity().supportFragmentManager.findFragmentById(R.id.fragmentContainers) as NavHostFragment?
+        return topLevelHost?.navController ?: findNavController()
+    }
 
 }
