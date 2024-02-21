@@ -1,7 +1,7 @@
 package com.example.mapkitresultproject.data.repository
 
 
-import com.example.mapkitresultproject.data.local.ConsigneeDao
+import com.example.mapkitresultproject.data.local.room.ConsigneeDao
 import com.example.mapkitresultproject.domain.models.Consignee
 import com.example.mapkitresultproject.domain.repository.ConsigneeRepository
 import kotlinx.coroutines.flow.Flow

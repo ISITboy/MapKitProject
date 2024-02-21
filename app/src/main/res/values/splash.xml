@@ -12,6 +12,6 @@
 
         <!-- Установить тема Действия, которая следует непосредственно за заставкой. -->
         <!-- Обязательно -->
-        <item  name = "postSplashScreenTheme" > @style/Theme.MapKitResultProject </item>
+        <item  name = "postSplashScreenTheme" > @style/Base.Theme.MapKitResultProject </item>
     </style>
 </resources>

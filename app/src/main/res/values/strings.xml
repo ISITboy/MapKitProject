@@ -26,4 +26,20 @@
     <string name="shipper">Грузоотправители</string>
     <string name="consignees">Грузополучатели</string>
     <string name="route">Маршрут</string>
+
+
+    <string name="auth_error_message">Error</string>
+    <string name="login_error">Email is incorrect</string>
+    <string name="name_error">Name should be at list 2 signs</string>
+    <string name="password_error_same">Passwords should be the same</string>
+    <string name="password_error">Passwords is incorrect</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="check_password">Check Password</string>
+    <string name="home_text">Your application may be here</string>
+
+
+    <string name="toolbar_title_profile">Profile</string>
+
+
 </resources>

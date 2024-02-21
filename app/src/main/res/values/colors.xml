@@ -15,8 +15,8 @@
     <color name="background_splash_screen">#FFE7BD</color>
     <color name="splash_color">#FFA200</color>
 
-    <color name="background_splash_start">#81FF4D</color>
-    <color name="background_splash_end">#BADCAD</color>
+    <color name="background_splash_start">#FFC83C</color>
+    <color name="background_splash_end">#FFF38C</color>
     <color name="background_sign_in_button">#92D875</color>
 
 
@@ -25,8 +25,9 @@
     <color name="card_view_item_background">#8597FF</color>
 
 
-
+    <color name="red">#B80909</color>
     <color name="base_theme">#45BC14</color>
+    <color name="transparent">#57302D2D</color>
 
 
 </resources>

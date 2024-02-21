@@ -1,15 +1,12 @@
 package com.example.mapkitresultproject.presentation.tabs.map
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.flowWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import com.example.mapkitresultproject.R
 import com.example.mapkitresultproject.databinding.FragmentMapBinding
 import com.example.mapkitresultproject.domain.models.CameraPositionBuilder
@@ -19,6 +16,7 @@ import com.example.mapkitresultproject.domain.state.SearchRouteState
 import com.example.mapkitresultproject.domain.state.SearchState
 import com.example.mapkitresultproject.domain.models.SelectedObjectHolder
 import com.example.mapkitresultproject.domain.models.VehicleOptionsBuilder
+import com.example.mapkitresultproject.presentation.basecomponent.mapkit.MapKitFragment
 import com.example.mapkitresultproject.presentation.tabs.map.details.DetailsFrag
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.yandex.mapkit.Animation
@@ -33,16 +31,26 @@ import com.yandex.mapkit.map.CameraUpdateReason
 import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.PolylineMapObject
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 
 @AndroidEntryPoint
-class MapFragment : Fragment() {
+class MapFragment : MapKitFragment<FragmentMapBinding>() {
 
 
-    lateinit var binding: FragmentMapBinding
+
     private val viewModel: MapViewModel by viewModels()
     private lateinit var animation: com.example.mapkitresultproject.presentation.tabs.map.Animation
+    override val bindingInflater: (LayoutInflater, ViewGroup?) -> FragmentMapBinding
+        get() = { inflater, container ->
+            FragmentMapBinding.inflate(inflater, container, false)
+        }
+    override val searchState: MutableStateFlow<SearchState>
+        get() = viewModel.getSearchState()
+    override val subscribeForSearch: Flow<*>?
+        get() = viewModel.subscribeForSearch()
+    override val searchRouteState: MutableStateFlow<SearchRouteState>
+        get() = viewModel.getCreateRouteState()
 
     private val cameraListener = CameraListener { _, _, finished, _ ->
         // Updating current visible region to apply research on map moved by user gestures.
@@ -86,16 +94,6 @@ class MapFragment : Fragment() {
         true
     }
 
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        binding = FragmentMapBinding.inflate(layoutInflater)
-        return binding.root
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         animation = Animation(requireActivity())
@@ -105,38 +103,6 @@ class MapFragment : Fragment() {
         setDependencyForCreateRoute()
         setDependencyForInteractionMap()
         moveToStartLocation()
-
-        viewModel.getSearchState().flowWithLifecycle(lifecycle)
-            .onEach { state ->
-                actionWithStateLoading(state = state)
-                if (state is SearchState.Error) actionWithStateError(state)
-                else {
-                    hideErrorMessageLayout()
-                    actionWithStateSuccess(state)
-                }
-            }.launchIn(lifecycleScope)
-
-        viewModel.subscribeForSearch().flowWithLifecycle(lifecycle).launchIn(lifecycleScope)
-
-        binding.searchText.setOnEditorActionListener { _, _, _ ->
-            viewModel.setVisibleRegion(viewModel.map.visibleRegion)
-            viewModel.createSession(
-                binding.searchText.text.toString()
-            )
-            true
-        }
-
-        viewModel.getCreateRouteState().flowWithLifecycle(lifecycle)
-            .onEach { state ->
-                actionWithStateLoading(state = state)
-
-                if (state is SearchRouteState.Error) actionWithStateError(state)
-                else {
-                    hideErrorMessageLayout()
-                    actionWithStateSuccess(state)
-                }
-
-            }.launchIn(lifecycleScope)
 
         viewModel.getSelectedPoint().observe(requireActivity()) {
             viewModel.setPointForRoute(it)
@@ -169,7 +135,7 @@ class MapFragment : Fragment() {
         }
         binding.searchButton.setOnClickListener {
             viewModel.setVisibleRegion(viewModel.map.visibleRegion)
-            viewModel.createSession(binding.searchText.text.toString())
+            viewModel.createSearchSession(binding.searchText.text.toString())
         }
     }
 
@@ -204,14 +170,11 @@ class MapFragment : Fragment() {
     }
 
     private fun moveToStartLocation() {
-        val сameraPosition = CameraPositionBuilder().build()
         binding.mapview.map.move(
-            сameraPosition,
+            CameraPositionBuilder().build(),
             Animation(Animation.Type.SMOOTH, 2f), null
         )
     }
-
-
 
     override fun onStart() {
         super.onStart()
@@ -246,7 +209,7 @@ class MapFragment : Fragment() {
         errorMessageLayout.visibility = View.GONE
     }
 
-    private fun <T> actionWithStateError(state: T) = with(binding) {
+    override fun <T> actionWithStateError(state: T) = with(binding) {
         when (state) {
             is SearchState.Error -> {
                 val error = state.message
@@ -262,7 +225,7 @@ class MapFragment : Fragment() {
         }
     }
 
-    private fun <T> actionWithStateLoading(state: T) = with(binding) {
+    override fun <T> actionWithStateLoading(state: T) = with(binding) {
 
         when (state is SearchState.Loading || state is SearchRouteState.Loading) {
             true -> {
@@ -277,7 +240,7 @@ class MapFragment : Fragment() {
         }
     }
 
-    private fun <T> actionWithStateSuccess(state:T) = with(binding){
+    override fun <T> actionWithStateSuccess(state:T) = with(binding){
         hideErrorMessageLayout()
         when(state){
             is SearchState.Success -> {

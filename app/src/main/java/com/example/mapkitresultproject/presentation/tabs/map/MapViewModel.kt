@@ -1,18 +1,14 @@
 package com.example.mapkitresultproject.presentation.tabs.map
 
 import android.content.Context
-import androidx.lifecycle.ViewModel
 import com.example.mapkitresultproject.domain.usecase.mapkitusescases.CreateRouteUseCase
 import com.example.mapkitresultproject.domain.usecase.mapkitusescases.InteractionUseCase
 import com.example.mapkitresultproject.domain.usecase.mapkitusescases.SearchUseCase
+import com.example.mapkitresultproject.presentation.basecomponent.mapkit.MapKitViewModel
 import com.yandex.mapkit.Animation
-import com.yandex.mapkit.directions.DirectionsFactory
 import com.yandex.mapkit.directions.driving.DrivingOptions
 import com.yandex.mapkit.directions.driving.DrivingRoute
-import com.yandex.mapkit.directions.driving.DrivingRouter
-import com.yandex.mapkit.directions.driving.DrivingRouterType
 import com.yandex.mapkit.directions.driving.VehicleOptions
-import com.yandex.mapkit.directions.driving.VehicleType
 import com.yandex.mapkit.geometry.BoundingBox
 import com.yandex.mapkit.geometry.Geometry
 import com.yandex.mapkit.geometry.Point
@@ -22,13 +18,10 @@ import com.yandex.mapkit.map.Map
 import com.yandex.mapkit.map.MapObjectCollection
 import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.VisibleRegion
-import com.yandex.mapkit.search.SearchFactory
-import com.yandex.mapkit.search.SearchManager
-import com.yandex.mapkit.search.SearchManagerType
 import com.yandex.mapkit.search.SearchOptions
-import com.yandex.mapkit.search.SearchType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.Queue
 import javax.inject.Inject
 
 
@@ -38,22 +31,29 @@ class MapViewModel @Inject constructor(
     private val searchUseCase: SearchUseCase,
     private val createRouteUseCase: CreateRouteUseCase,
     private val interactionUseCase: InteractionUseCase
-) : ViewModel() {
+) : MapKitViewModel() {
 
 
     lateinit var map: Map
 
 
 //    Start SearchRepository Dependency
-    fun setVisibleRegion(region: VisibleRegion?) {
+    override fun setVisibleRegion(region: VisibleRegion?) {
         searchUseCase.setVisibleRegion(region)
     }
 
-    fun setSearchOption(searchOptions: SearchOptions) {
+    override fun setSearchOption(searchOptions: SearchOptions) {
         searchUseCase.setSearchOption(searchOptions = searchOptions)
     }
 
-    fun createSession(query: String) = searchUseCase.createSession(query = query)
+    override fun createSearchSession(query: String) {
+        searchUseCase.createSession(query = query)
+    }
+
+    override fun createSearchSession(query: Queue<String>) {
+        searchUseCase.createSession(query = query)
+    }
+
 
     fun setMapObjectTapListener(mapObjectTapListener: MapObjectTapListener){
         searchUseCase.setMapObjectTapListener(mapObjectTapListener)
@@ -65,25 +65,25 @@ class MapViewModel @Inject constructor(
     fun clearObjectCollection(){
         searchUseCase.clearObjectCollection()
     }
-    fun getSearchState() = searchUseCase.getSearchState()
+    override fun getSearchState() = searchUseCase.getSearchState()
 
     fun subscribeForSearch() = searchUseCase.subscribeForSearch()
 
 
     //    Start CreateRouteRepository Dependency
-    fun setDrivingOptions(drivingOptions : DrivingOptions) {
+    override fun setDrivingOptions(drivingOptions : DrivingOptions) {
         createRouteUseCase.setDrivingOptions(drivingOptions = drivingOptions)
     }
 
-    fun setVehicleOptions(vehicleOptions: VehicleOptions) {
+    override fun setVehicleOptions(vehicleOptions: VehicleOptions) {
         createRouteUseCase.setVehicleOptions(vehicleOptions = vehicleOptions)
     }
 
-    fun setRouteTapListener(mapObjectTapListener:MapObjectTapListener){
+    override fun setRouteTapListener(mapObjectTapListener:MapObjectTapListener){
         createRouteUseCase.setRouteTapListener(mapObjectTapListener)
     }
 
-    fun createSessionCreateRoute() {
+    override fun createSessionCreateRoute() {
         createRouteUseCase.createSessionCreateRoute()
     }
 
@@ -93,7 +93,7 @@ class MapViewModel @Inject constructor(
     fun getPolylinesMapsObjects() = createRouteUseCase.getPolylinesMapsObjects()
 
 
-    fun getCreateRouteState() = createRouteUseCase.getCreateRouteState()
+    override fun getCreateRouteState() = createRouteUseCase.getCreateRouteState()
 
 
     fun setMapObjectRoutesCollection(mapObjectCollection: MapObjectCollection){

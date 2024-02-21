@@ -1,6 +1,6 @@
 package com.example.mapkitresultproject.data.repository
 
-import com.example.mapkitresultproject.data.local.ShipperDao
+import com.example.mapkitresultproject.data.local.room.ShipperDao
 import com.example.mapkitresultproject.domain.models.Shipper
 import com.example.mapkitresultproject.domain.models.ShipperWithConsignee
 import com.example.mapkitresultproject.domain.repository.ShipperRepository

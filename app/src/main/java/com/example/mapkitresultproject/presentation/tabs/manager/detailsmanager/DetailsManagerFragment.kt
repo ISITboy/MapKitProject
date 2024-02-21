@@ -2,43 +2,52 @@ package com.example.mapkitresultproject.presentation.tabs.manager.detailsmanager
 
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.flowWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mapkitresultproject.R
 import com.example.mapkitresultproject.databinding.FragmentDetailsManagerBinding
 import com.example.mapkitresultproject.domain.models.SearchOptionBuilder
+import com.example.mapkitresultproject.domain.state.SearchRouteState
 import com.example.mapkitresultproject.domain.state.SearchState
+import com.example.mapkitresultproject.presentation.basecomponent.mapkit.MapKitFragment
 import com.example.mapkitresultproject.presentation.tabs.manager.detailsmanager.adapter.ConsigneeItemsAdapter
 import com.example.mapkitresultproject.presentation.tabs.manager.detailsmanager.adapter.ShipperItemsAdapter
-import com.yandex.mapkit.search.SearchOptions
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.LinkedList
 import java.util.Queue
 
 
 @AndroidEntryPoint
-class DetailsManagerFragment : Fragment(R.layout.fragment_details_manager) {
-
-    lateinit var binding: FragmentDetailsManagerBinding
+class DetailsManagerFragment : MapKitFragment<FragmentDetailsManagerBinding>(){
     private val viewModel: StorageManagerViewModel by activityViewModels()
+    override val bindingInflater: (LayoutInflater, ViewGroup?) -> FragmentDetailsManagerBinding
+        get() = { inflater, container ->
+            FragmentDetailsManagerBinding.inflate(inflater, container, false)
+        }
+    override val searchState: MutableStateFlow<SearchState>
+        get() = viewModel.getSearchState()
+    override val subscribeForSearch: Flow<*>?
+        get() = null
+    override val searchRouteState: MutableStateFlow<SearchRouteState>?
+        get() = null
+
+
+    private val addressed = mutableListOf<Double>()
     private val shipperItemAdapter by lazy { ShipperItemsAdapter(viewModel) }
     private val consigneeItemAdapter by lazy { ConsigneeItemsAdapter(viewModel) }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding = FragmentDetailsManagerBinding.bind(view)
 
         initRecyclerViews()
         initItemTouchHelper()
@@ -70,35 +79,40 @@ class DetailsManagerFragment : Fragment(R.layout.fragment_details_manager) {
                 AddManagerStorageItemFragment().tag
             )
         }
-        viewModel.setVisibleRegion()
+        viewModel.setVisibleRegion(null)
         viewModel.setSearchOption(SearchOptionBuilder().build().setResultPageSize(1))
 
-        val addressed = mutableListOf<Double>()
-
-        viewModel.getSearchState().flowWithLifecycle(lifecycle).onEach { state ->
-
-            if (state is SearchState.Success) {
-                val successSearchState = state as? SearchState.Success
-                val searchItems = successSearchState?.items ?: emptyList()
-                if (searchItems.isNotEmpty()) {
-                    addressed.add(searchItems.first().point.longitude)
-                    addressed.add(searchItems.first().point.latitude)
-
-                    if (addressed.size == (viewModel.getConsignee().value!!.size + viewModel.getShipper().value!!.size) * 2) {
-                        requireActivity().supportFragmentManager.setFragmentResult("RR", bundleOf("k" to addressed.toDoubleArray()))
-                        findNavController().popBackStack()
-                    }
-                }
-            }
-
-        }.launchIn(lifecycleScope)
 
         binding.startButton.setOnClickListener {
             val shippers = viewModel.getShipper().value?.map { it.address } ?: emptyList()
             val consignees = viewModel.getConsignee().value?.map { it.address } ?: emptyList()
             val addresses = shippers + consignees
             val items: Queue<String> = LinkedList<String>(addresses)
-            viewModel.createSession(items)
+            viewModel.createSearchSession(items)
+        }
+    }
+
+    override fun <T> actionWithStateError(state: T) {
+
+    }
+
+    override fun <T> actionWithStateLoading(state: T) {
+
+    }
+
+    override fun <T> actionWithStateSuccess(state: T) {
+        when(state){
+            is SearchState.Success -> {
+                val successSearchState = state as? SearchState.Success
+                val searchItems = successSearchState?.items ?: emptyList()
+                addressed.add(searchItems.first().point.longitude)
+                addressed.add(searchItems.first().point.latitude)
+                if (addressed.size == (viewModel.getConsignee().value!!.size + viewModel.getShipper().value!!.size) * 2) {
+                    requireActivity().supportFragmentManager.setFragmentResult("RR", bundleOf("k" to addressed.toDoubleArray()))
+                    findNavController().popBackStack()
+                }
+            }
+            is SearchRouteState.Success ->{}
         }
     }
 

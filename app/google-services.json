@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "703899302162",
+    "project_id": "fir-practic-80202",
+    "storage_bucket": "fir-practic-80202.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:703899302162:android:ec0cd31d47df1da71e5bcb",
+        "android_client_info": {
+          "package_name": "com.example.mapkitresultproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_iRg6uu6LAY8WuVDjOix4e5Dg1FH15ug"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

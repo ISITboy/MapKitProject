@@ -4,6 +4,7 @@ plugins {
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
     id("androidx.navigation.safeargs.kotlin")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -44,6 +45,12 @@ android {
 
 dependencies {
 
+    //firebase
+    // Import the BoM for the Firebase platform
+    implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth-ktx")
+
     //Retrofit
 
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
@@ -52,6 +59,7 @@ dependencies {
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation ("com.squareup.okhttp3:logging-interceptor:4.9.0")
     implementation ("androidx.compose.runtime:runtime-livedata:1.4.0-alpha04")
+    implementation("com.google.firebase:firebase-database:20.3.0")
 
     //Room
     val room_version = "2.6.0"

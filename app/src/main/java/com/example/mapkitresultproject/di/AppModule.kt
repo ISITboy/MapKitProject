@@ -3,34 +3,48 @@ package com.example.mapkitresultproject.di
 import android.app.Application
 import android.content.Context
 import androidx.room.Room
-import com.example.mapkitresultproject.data.local.ConsigneeDao
-import com.example.mapkitresultproject.data.local.Database
-import com.example.mapkitresultproject.data.local.ShipperDao
+import com.example.mapkitresultproject.data.local.room.ConsigneeDao
+import com.example.mapkitresultproject.data.local.room.Database
+import com.example.mapkitresultproject.data.local.room.ShipperDao
+import com.example.mapkitresultproject.data.local.sharedPref.SharedPrefUserStorage
+import com.example.mapkitresultproject.data.remote.FirebaseService
 import com.example.mapkitresultproject.data.remote.RoutesApi
 import com.example.mapkitresultproject.data.remote.utils.Constants.BASE_URL
+import com.example.mapkitresultproject.data.repository.AuthRepositoryImpl
 import com.example.mapkitresultproject.data.repository.ConsigneeRepositoryImpl
+import com.example.mapkitresultproject.data.repository.FirebaseServiceImpl
 import com.example.mapkitresultproject.data.repository.MapKitCreateRoutRepositoryImpl
 import com.example.mapkitresultproject.data.repository.MapKitInteractionMapRepositoryImpl
 import com.example.mapkitresultproject.data.repository.MapKitSearchRepositoryImpl
+import com.example.mapkitresultproject.data.repository.SharedPrefUserStorageRepositoryImpl
 import com.example.mapkitresultproject.data.repository.ShipperRepositoryImpl
 import com.example.mapkitresultproject.domain.Constants.DATABASE_NAME
+import com.example.mapkitresultproject.domain.repository.AuthRepository
 import com.example.mapkitresultproject.domain.repository.ConsigneeRepository
 import com.example.mapkitresultproject.domain.repository.MapKitCreateRoutRepository
 import com.example.mapkitresultproject.domain.repository.MapKitInteractionMapRepository
 import com.example.mapkitresultproject.domain.repository.MapKitSearchRepository
+import com.example.mapkitresultproject.domain.repository.SharedPrefUserStorageRepository
 import com.example.mapkitresultproject.domain.repository.ShipperRepository
 import com.example.mapkitresultproject.domain.usecase.ConsigneeUsesCases
+import com.example.mapkitresultproject.domain.usecase.SharedPrefUserStorageUsesCases
 import com.example.mapkitresultproject.domain.usecase.ShipperUsesCases
 import com.example.mapkitresultproject.domain.usecase.consignee.DeleteConsigneeUseCase
 import com.example.mapkitresultproject.domain.usecase.consignee.GetAllConsigneesUseCase
 import com.example.mapkitresultproject.domain.usecase.consignee.GetConsigneeUseCase
 import com.example.mapkitresultproject.domain.usecase.consignee.InsertConsigneeUseCase
+import com.example.mapkitresultproject.domain.usecase.sharedpreferences.DeleteUIDUseCase
+import com.example.mapkitresultproject.domain.usecase.sharedpreferences.GetUIDUseCase
+import com.example.mapkitresultproject.domain.usecase.sharedpreferences.SaveUIDUsesCase
 import com.example.mapkitresultproject.domain.usecase.shipper.DeleteShipperUseCase
 import com.example.mapkitresultproject.domain.usecase.shipper.GetAllShippersUseCase
 import com.example.mapkitresultproject.domain.usecase.shipper.GetShipperUseCase
 import com.example.mapkitresultproject.domain.usecase.shipper.InsertShipperUseCase
-import com.yandex.mapkit.map.Map
-import dagger.Component.Factory
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -145,4 +159,41 @@ object AppModule {
     @Singleton
     @Provides
     fun providesPostService(retrofit: Retrofit) = retrofit.create(RoutesApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideFirebaseAuth(): FirebaseAuth {
+        return Firebase.auth
+    }
+
+    @Provides
+    @Singleton
+    fun provideSharedPrefUserStorageUsesCases(
+        deleteUIDUseCase: DeleteUIDUseCase,
+        getUIDUseCase: GetUIDUseCase,
+        saveUIDUsesCase: SaveUIDUsesCase
+    ): SharedPrefUserStorageUsesCases =SharedPrefUserStorageUsesCases(deleteUIDUseCase, getUIDUseCase, saveUIDUsesCase)
+
+    @Provides
+    @Singleton
+    fun provideAuthRepository(
+        auth:FirebaseAuth,
+        sharedPrefUserStorageUsesCases: SharedPrefUserStorageUsesCases
+    ): AuthRepository = AuthRepositoryImpl(auth = auth, sharedPrefUserStorageUsesCases = sharedPrefUserStorageUsesCases)
+
+    @Provides
+    @Singleton
+    fun providesSharedPrefUserStorageRepository(
+        sharedPrefUserStorage: SharedPrefUserStorage
+    ): SharedPrefUserStorageRepository = SharedPrefUserStorageRepositoryImpl(sharedPrefUserStorage = sharedPrefUserStorage)
+
+    @Provides
+    @Singleton
+    fun provideFirebaseDatabase() : FirebaseDatabase = FirebaseDatabase.getInstance("https://fir-practic-80202-default-rtdb.europe-west1.firebasedatabase.app/")
+    @Provides
+    @Singleton
+    fun providesFirebaseRepository(
+        firebaseDatabase:FirebaseDatabase,
+        getUIDUseCase: GetUIDUseCase
+    ): FirebaseService = FirebaseServiceImpl(firebaseDatabase,getUIDUseCase)
 }

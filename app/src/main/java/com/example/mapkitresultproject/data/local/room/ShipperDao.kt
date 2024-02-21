@@ -1,4 +1,4 @@
-package com.example.mapkitresultproject.data.local
+package com.example.mapkitresultproject.data.local.room
 
 import androidx.room.Dao
 import androidx.room.Delete

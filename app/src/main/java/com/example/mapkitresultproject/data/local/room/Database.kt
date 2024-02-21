@@ -1,4 +1,4 @@
-package com.example.mapkitresultproject.data.local
+package com.example.mapkitresultproject.data.local.room
 
 import androidx.room.Database
 import androidx.room.RoomDatabase

@@ -2,20 +2,30 @@ package com.example.mapkitresultproject.presentation
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.example.mapkitresultproject.R
+import com.example.mapkitresultproject.domain.state.RealtimeCRUDState
+import com.example.mapkitresultproject.presentation.authorization.signup.RegistrationViewModel
 import com.example.mapkitresultproject.presentation.tabs.TabsFragment
 import com.example.mapkitresultproject.presentation.tabs.manager.detailsmanager.StorageManagerViewModel
+import com.example.mapkitresultproject.presentation.tabs.map.MapViewModel
 import com.yandex.mapkit.MapKitFactory
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import java.util.regex.Pattern
 
 
@@ -28,7 +38,9 @@ class MainActivity : AppCompatActivity() {
 
     private val topLevelDestinations = setOf(getTabsDestination(), getSignInDestination())
 
-    private val viewModel: StorageManagerViewModel by viewModels()
+    private val viewModelStorageManager: StorageManagerViewModel by viewModels()
+    private val mainViewModel: MainViewModel by viewModels()
+    private val viewModelRegistration:RegistrationViewModel by viewModels()
 
     // слушатель фрагмента, который отслеживает текущий navController
     private val fragmentListener = object : FragmentManager.FragmentLifecycleCallbacks() {
@@ -49,6 +61,20 @@ class MainActivity : AppCompatActivity() {
         val navController = getRootNavController()
         prepareRootNavController(isSignedIn(), navController)
         onNavControllerActivated(navController)
+
+        viewModelRegistration.getState().flowWithLifecycle(lifecycle).onEach {state->
+            when(state){
+                is RealtimeCRUDState.Success  -> {
+                    Log.d("MyLog","STATESTATESTATE")
+                    Toast.makeText(this, "${state.message}", Toast.LENGTH_SHORT).show()
+                }
+                is RealtimeCRUDState.Error -> Toast.makeText(this,"${state.message}",
+                    Toast.LENGTH_SHORT).show()
+                else->{
+                }
+            }
+
+        }.launchIn(lifecycleScope)
 
         supportFragmentManager.registerFragmentLifecycleCallbacks(fragmentListener, true)
     }
@@ -129,7 +155,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isSignedIn(): Boolean {
-        return false
+        return mainViewModel.checkUID().isNotBlank()
     }
 
     //идентификатор главного графа
