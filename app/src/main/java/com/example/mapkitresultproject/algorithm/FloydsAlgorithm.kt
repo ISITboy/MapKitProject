@@ -3,12 +3,26 @@ package com.example.mapkitresultproject.algorithm
 import com.example.mapkitresultproject.algorithm.utils.transposeMatrix
 import java.math.RoundingMode
 
-private fun floydsAlgorithm(distanceMatrix: Array<Array<Double>>): Array<Array<Double>> {
+
+
+
+fun getShortedDistanceMatrix(
+    matrix: Array<Array<Double>>,
+    countProducer: Int
+): MutableList<Array<Array<Double>>> {
+    val result = decomposeMatrices(matrix, countProducer)
+    result.map { floydsAlgorithm(it) }
+    return result
+}
+
+
+fun floydsAlgorithm(distanceMatrix: Array<Array<Double>>): Array<Array<Double>> {
     for (k in distanceMatrix.indices) {
         for (i in distanceMatrix.indices) {
             for (j in distanceMatrix.indices) {
                 if ((distanceMatrix[i][j] > distanceMatrix[i][k] + distanceMatrix[k][j]) && distanceMatrix[i][k] < Int.MAX_VALUE && distanceMatrix[k][j] < Int.MAX_VALUE) {
-                    distanceMatrix[i][j] = formattingNumber(distanceMatrix[i][k] + distanceMatrix[k][j])
+                    distanceMatrix[i][j] =
+                        formattingNumber(distanceMatrix[i][k] + distanceMatrix[k][j])
                 }
             }
         }
@@ -19,42 +33,32 @@ private fun floydsAlgorithm(distanceMatrix: Array<Array<Double>>): Array<Array<D
 private fun formattingNumber(number: Double): Double =
     number.toBigDecimal().setScale(2, RoundingMode.UP).toDouble()
 
-fun getShortestPathMatrix(distanceMatrix: Array<Array<Double>>): Array<Array<Double>> =
-    floydsAlgorithm(distanceMatrix)
-
-fun getListKilometerWinningMatrix(
-    range: IntRange,
-    distanceMatrix: Array<Array<Double>>
-): MutableList<MutableList<MutableList<Double>>> {
-    val listMatrixDistance = mutableListOf<MutableList<MutableList<Double>>>()
-    range.forEach {
-        val distance = distanceMatrix.map { it.toMutableList() }.toMutableList()
-        val cutedMatrix = cutOfConsignee(it, range, distance)
-        listMatrixDistance.add(removeNull(cutedMatrix))
-    }
-
-    return listMatrixDistance
-}
-
-private fun cutOfConsignee(
-    item: Int,
-    range: IntRange,
-    distanceMatrix: MutableList<MutableList<Double>>
-): MutableList<MutableList<Double>> {
-    var result = distanceMatrix.toMutableList()
-    range.forEach {
-        if (it != item) {
-            result[it].replaceAll { 0.0 }
-            val tr = transposeMatrix(result)
-            tr[it].replaceAll { 0.0 }
-            result = transposeMatrix(tr)
+fun decomposeMatrices(
+    matrix: Array<Array<Double>>,
+    countProducer: Int
+): MutableList<Array<Array<Double>>> {
+    val baseSize = matrix.size - (countProducer - 1)
+    val resultedMatrix = mutableListOf<Array<Array<Double>>>()
+    val incorrectIndex = MutableList(countProducer) { it }
+    var indI: Int
+    var indJ: Int
+    repeat(countProducer) { n ->
+        incorrectIndex.removeAt(n)
+        indI = 0
+        val list = Array(baseSize) { Array(baseSize) { 0.0 } }
+        for (i in matrix.indices) {
+            indJ = 0
+            for (j in 0 until matrix[i].size) {
+                if (i !in incorrectIndex && j !in incorrectIndex) {
+                    list[indI][indJ] = matrix[i][j]
+                    indJ++
+                    if (indJ == baseSize) indI++
+                }
+            }
         }
+        resultedMatrix.add(list)
+        incorrectIndex.add(n)
+        incorrectIndex.sort()
     }
-    return result
-}
-private fun removeNull(listList: MutableList<MutableList<Double>>): MutableList<MutableList<Double>> {
-    listList.removeIf { it.sum()==0.0 }
-    var r = transposeMatrix(listList)
-    r.removeIf { it.sum()==0.0 }
-    return transposeMatrix(r)
+    return resultedMatrix
 }

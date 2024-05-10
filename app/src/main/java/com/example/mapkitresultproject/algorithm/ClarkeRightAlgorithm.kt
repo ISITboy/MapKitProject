@@ -2,7 +2,8 @@ package com.example.mapkitresultproject.algorithm
 
 class ClarkeRightAlgorithm(private val dataForClarkeRight: DataForClarkeRight) {
 
-    private var kilometerWinnMatrix = dataForClarkeRight.matrix
+    private var currentKilometerWinnMatrix :MutableList<MutableList<Double>> = mutableListOf()
+    private val kilometerWinnMatrix = dataForClarkeRight.matrix
     var cargoVolumes = dataForClarkeRight.cargoVolumes.toMutableList()
     private var carrying = dataForClarkeRight.carrying
 
@@ -16,7 +17,30 @@ class ClarkeRightAlgorithm(private val dataForClarkeRight: DataForClarkeRight) {
     var next = true
     var finish = false
 
-    fun start() {
+    fun start(){
+        var checkDeleteWeight = ArrayList<Int>()
+        while(cargoVolumes.max()!=0.0){
+            kilometerWinnMatrix.forEachIndexed { index, mutableLists ->
+                if (findItemWithMaxValue(kilometerWinnMatrix) == index) {
+                    finish = false
+                    currentKilometerWinnMatrix = mutableLists
+                    operation()
+                    cargoVolumes.forEachIndexed { index, d ->
+                        if (d == 0.0) {
+                            checkDeleteWeight.add(index)
+                        }
+                    }
+                }
+            }
+            checkDeleteWeight.forEach { n ->
+                kilometerWinnMatrix.forEach {
+                    putNullInMatrix(n)
+                }
+            }
+        }
+    }
+
+    fun operation() {
         while (!finish) {
             if (next) findMaxValueInMatrix()
 
@@ -25,7 +49,15 @@ class ClarkeRightAlgorithm(private val dataForClarkeRight: DataForClarkeRight) {
             else findMaxValuesRowAndColumn()
         }
     }
+    private fun findItemWithMaxValue(listItem: MutableList<MutableList<MutableList<Double>>>): Int {
+        var list = mutableListOf<Double>()
 
+        listItem.forEachIndexed { index, mutableLists ->
+            currentKilometerWinnMatrix = listItem.get(index)
+            list.add(returnCheckMaxValues())
+        }
+        return list.withIndex().maxBy { it.value }.index
+    }
     fun controlCountNullWeight(): Int {
         var quantity = 0
         cargoVolumes.forEach {
@@ -55,16 +87,16 @@ class ClarkeRightAlgorithm(private val dataForClarkeRight: DataForClarkeRight) {
         finish = true
     }
 
-    private fun kilometerWinnMatrixIsNull() = kilometerWinnMatrix.all { row -> row.all { number -> number == 0.0 } }
+    private fun kilometerWinnMatrixIsNull() = currentKilometerWinnMatrix.all { row -> row.all { number -> number == 0.0 } }
     private fun cargoVolumesIsNull() = cargoVolumes.all { it == 0.0 }
     private fun findMaxValueInMatrix() {
         next = false
         var maxValue = 0.0
         var pair: Pair<Int, Int> = Pair(0, 0)
-        for (i in kilometerWinnMatrix.indices) {
-            for (j in 0 until kilometerWinnMatrix[i].size) {
-                if (kilometerWinnMatrix[i][j] >= maxValue) {
-                    maxValue = kilometerWinnMatrix[i][j]
+        for (i in currentKilometerWinnMatrix.indices) {
+            for (j in 0 until currentKilometerWinnMatrix[i].size) {
+                if (currentKilometerWinnMatrix[i][j] >= maxValue) {
+                    maxValue = currentKilometerWinnMatrix[i][j]
                     pair = Pair(i, j)
                 }
             }
@@ -81,15 +113,15 @@ class ClarkeRightAlgorithm(private val dataForClarkeRight: DataForClarkeRight) {
     private fun findMaxValuesRowAndColumn() {
         var maxValueRow = 0.0
         var maxValueColumn = 0.0
-        for (i in kilometerWinnMatrix.indices) {
-            if (kilometerWinnMatrix[i][route.last()] > maxValueRow && i != route.first()) {
-                maxValueRow = kilometerWinnMatrix[i][route.last()]
+        for (i in currentKilometerWinnMatrix.indices) {
+            if (currentKilometerWinnMatrix[i][route.last()] > maxValueRow && i != route.first()) {
+                maxValueRow = currentKilometerWinnMatrix[i][route.last()]
                 rowIndexForRout = i
             }
         }
-        for (i in kilometerWinnMatrix.indices) {
-            if (kilometerWinnMatrix[route.first()][i] > maxValueColumn && i != route.last()) {
-                maxValueColumn = kilometerWinnMatrix[route.first()][i]
+        for (i in currentKilometerWinnMatrix.indices) {
+            if (currentKilometerWinnMatrix[route.first()][i] > maxValueColumn && i != route.last()) {
+                maxValueColumn = currentKilometerWinnMatrix[route.first()][i]
                 columnIndexForRout = i
             }
         }
@@ -131,9 +163,9 @@ class ClarkeRightAlgorithm(private val dataForClarkeRight: DataForClarkeRight) {
     }
 
     fun putNullInMatrix(ind: Int) {
-        for (i in 0 until kilometerWinnMatrix.size) {
-            kilometerWinnMatrix[i][ind] = 0.0
-            kilometerWinnMatrix[ind][i] = 0.0
+        for (i in 0 until currentKilometerWinnMatrix.size) {
+            currentKilometerWinnMatrix[i][ind] = 0.0
+            currentKilometerWinnMatrix[ind][i] = 0.0
         }
         cargoVolumes[ind] = 0.0
     }
@@ -163,10 +195,10 @@ class ClarkeRightAlgorithm(private val dataForClarkeRight: DataForClarkeRight) {
 
     fun returnCheckMaxValues(): Double {
         var maxValue = 0.0
-        for (i in kilometerWinnMatrix.indices) {
-            for (j in 0 until kilometerWinnMatrix[i].size) {
-                if (kilometerWinnMatrix[i][j] >= maxValue) {
-                    maxValue = kilometerWinnMatrix[i][j]
+        for (i in currentKilometerWinnMatrix.indices) {
+            for (j in 0 until currentKilometerWinnMatrix[i].size) {
+                if (currentKilometerWinnMatrix[i][j] >= maxValue) {
+                    maxValue = currentKilometerWinnMatrix[i][j]
                 }
             }
         }

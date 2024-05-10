@@ -1,11 +1,13 @@
 package com.example.mapkitresultproject.presentation.tabs.manager
 
+import android.inputmethodservice.Keyboard
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.Composable
 import androidx.fragment.app.viewModels
 import com.example.mapkitresultproject.R
 import com.example.mapkitresultproject.Utils.findTopNavController
@@ -25,25 +27,23 @@ class ManagerFragment : Fragment(R.layout.fragment_manager) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentManagerBinding.bind(view)
 
-
         requireActivity().supportFragmentManager.setFragmentResultListener("RR",viewLifecycleOwner){_,data->
-            val result = data.getDoubleArray("k")?.let {
+            data.getInt("c")?.let {
+                viewModel.count = it
+            }
+            data.getDoubleArray("k")?.let {
                 viewModel.setAddresses(it.toList())
             }
 //            Log.d("MyLog", "result = ${result?.toList().toString()}")
-
         }
-
 
         viewModel.addresses.observe(requireActivity()){
             sendDataToServer(it)
         }
-
         viewModel.getDistances.observe(requireActivity()){
-            readMatrix(it)
+            Log.d(ManagerFragmentViewModel.TAG,"run")
+            viewModel.startClarkeRightAlgo(it, viewModel.count)
         }
-
-
         binding.click.setOnClickListener {
             findTopNavController().navigate(R.id.detailsManagerFragment)
         }
@@ -73,5 +73,4 @@ class ManagerFragment : Fragment(R.layout.fragment_manager) {
             println()
         }
     }
-
 }

@@ -28,7 +28,7 @@ import java.util.Queue
 
 
 @AndroidEntryPoint
-class DetailsManagerFragment : MapKitFragment<FragmentDetailsManagerBinding>(){
+class DetailsManagerFragment : MapKitFragment<FragmentDetailsManagerBinding>() {
     private val viewModel: StorageManagerViewModel by activityViewModels()
     override val bindingInflater: (LayoutInflater, ViewGroup?) -> FragmentDetailsManagerBinding
         get() = { inflater, container ->
@@ -87,7 +87,7 @@ class DetailsManagerFragment : MapKitFragment<FragmentDetailsManagerBinding>(){
             val shippers = viewModel.getShipper().value?.map { it.address } ?: emptyList()
             val consignees = viewModel.getConsignee().value?.map { it.address } ?: emptyList()
             val addresses = shippers + consignees
-            val items: Queue<String> = LinkedList<String>(addresses)
+            val items: Queue<String> = LinkedList(addresses)
             viewModel.createSearchSession(items)
         }
     }
@@ -101,18 +101,25 @@ class DetailsManagerFragment : MapKitFragment<FragmentDetailsManagerBinding>(){
     }
 
     override fun <T> actionWithStateSuccess(state: T) {
-        when(state){
+        when (state){
             is SearchState.Success -> {
                 val successSearchState = state as? SearchState.Success
                 val searchItems = successSearchState?.items ?: emptyList()
                 addressed.add(searchItems.first().point.longitude)
                 addressed.add(searchItems.first().point.latitude)
                 if (addressed.size == (viewModel.getConsignee().value!!.size + viewModel.getShipper().value!!.size) * 2) {
-                    requireActivity().supportFragmentManager.setFragmentResult("RR", bundleOf("k" to addressed.toDoubleArray()))
+                    requireActivity().supportFragmentManager.setFragmentResult(
+                        "RR",
+                        bundleOf(
+                            "k" to addressed.toDoubleArray(),
+                            "c" to viewModel.getShipper().value
+                        )
+                    )
                     findNavController().popBackStack()
                 }
             }
-            is SearchRouteState.Success ->{}
+
+            is SearchRouteState.Success -> {}
         }
     }
 

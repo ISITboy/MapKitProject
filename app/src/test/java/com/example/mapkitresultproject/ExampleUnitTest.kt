@@ -17,6 +17,30 @@ import org.junit.Assert.*
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 class ExampleUnitTest {
+
+
+    @Test
+    fun test(){
+        val listMap = listOf("1" to 1,"1" to 1,"2" to 2,"3" to 3)
+        var counter = 0
+        listMap.forEach {pair ->
+            counter += pair.second
+        }
+        val id = listMap.first { pair -> pair.first == "3" }
+        var result:Int? = null
+        listMap.forEach {(key,value)->
+            if(key == "xx") result = value
+        }
+        listMap.filter { it.first=="xx" }
+        if(result == null) println("not found")
+
+        val map = hashMapOf(null to "2")
+        map
+
+        assertEquals(3,listMap.indexOf(id))
+    }
+
+
     @Test
     fun testFlows() = runBlocking {
         val numbers = 1..10

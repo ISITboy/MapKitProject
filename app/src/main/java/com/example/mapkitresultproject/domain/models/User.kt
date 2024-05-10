@@ -1,6 +1,6 @@
 package com.example.mapkitresultproject.domain.models
 
-abstract class User {
+abstract class  User {
 
     abstract val email: String
     abstract val id: String

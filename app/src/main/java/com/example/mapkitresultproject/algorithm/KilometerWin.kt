@@ -26,9 +26,10 @@ private fun putNullsIntoMatrix(distanceMatrix:Array<Array<Double>>):Array<Array<
 }
 
 
-fun getKilometerWinningMatrix(distanceMatrix:Array<Array<Double>>): MutableList<MutableList<Double>> = putNullsIntoMatrix(
-    kilometerWinningAlgorithm(distanceMatrix)
-).map { it.toMutableList() }.toMutableList()
+//fun getKilometerWinningMatrix(distanceMatrix:Array<Array<Double>>): MutableList<MutableList<Double>> = putNullsIntoMatrix(
+//    kilometerWinningAlgorithm(distanceMatrix)
+//).map { it.toMutableList() }.toMutableList()
 
+fun getKilometerWinningMatrix(distanceMatrix:Array<Array<Double>>)= putNullsIntoMatrix(kilometerWinningAlgorithm(distanceMatrix))
 
 

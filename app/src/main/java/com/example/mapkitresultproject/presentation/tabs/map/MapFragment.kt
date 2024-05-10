@@ -47,7 +47,7 @@ class MapFragment : MapKitFragment<FragmentMapBinding>() {
         }
     override val searchState: MutableStateFlow<SearchState>
         get() = viewModel.getSearchState()
-    override val subscribeForSearch: Flow<*>?
+    override val subscribeForSearch: Flow<*>
         get() = viewModel.subscribeForSearch()
     override val searchRouteState: MutableStateFlow<SearchRouteState>
         get() = viewModel.getCreateRouteState()
