@@ -41,22 +41,31 @@ class StorageManagerViewModel @Inject constructor(
         return consigneeItems
     }
 
-    val event = MutableStateFlow<ManagerEvent>(ManagerEvent.AddShipperItem)
-    fun insertShipper(shipper: Shipper) = viewModelScope.launch {
+
+    private fun insertShipper(shipper: Shipper) = viewModelScope.launch {
         shipperUsesCases.insertShipperUseCase(shipper = shipper)
     }
 
-    fun insertConsignee(consignee: Consignee) = viewModelScope.launch {
+    private fun insertConsignee(consignee: Consignee) = viewModelScope.launch {
         consigneeUsesCases.insertConsigneeUseCase(consignee = consignee)
     }
 
-    fun deleteShipper(shipper: Shipper) = viewModelScope.launch {
+    private fun deleteShipper(shipper: Shipper) = viewModelScope.launch {
         shipperUsesCases.deleteShipperUseCase(shipper = shipper)
     }
 
 
-    fun deleteConsignee(consignee: Consignee) = viewModelScope.launch {
+    private fun deleteConsignee(consignee: Consignee) = viewModelScope.launch {
         consigneeUsesCases.deleteConsigneeUseCase(consignee = consignee)
+    }
+
+    fun eventManager(event: MembersEvent){
+        when(event){
+            is MembersEvent.AddConsigneeItem -> insertConsignee(event.consignee)
+            is MembersEvent.AddShipperItem -> insertShipper(event.shipper)
+            is MembersEvent.DeleteConsigneeItem -> deleteConsignee(event.consignee)
+            is MembersEvent.DeleteShipperItem -> deleteShipper(event.shipper)
+        }
     }
 
     fun getAllShipperItems() = viewModelScope.launch {

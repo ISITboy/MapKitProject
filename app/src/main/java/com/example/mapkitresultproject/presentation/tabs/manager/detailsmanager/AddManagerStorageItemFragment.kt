@@ -37,10 +37,7 @@ class AddManagerStorageItemFragment : BottomSheetDialogFragment()  {
             dismiss()
         }
 
-        when(viewModel.event.value){
-            ManagerEvent.AddShipperItem-> addShipper()
-            ManagerEvent.AddConsigneeItem-> addConsignee()
-        }
+
     }
 
     private fun addShipper()=with(binding){
@@ -53,7 +50,7 @@ class AddManagerStorageItemFragment : BottomSheetDialogFragment()  {
         }
     }
     private fun saveShipperItem(shipper: Shipper) {
-        viewModel.insertShipper(shipper)
+//        viewModel.insertShipper(shipper)
         showMessage("Shipper saved")
         dismiss()
     }
@@ -71,7 +68,7 @@ class AddManagerStorageItemFragment : BottomSheetDialogFragment()  {
     }
 
     private fun saveConsigneeItem(consignee: Consignee) {
-        viewModel.insertConsignee(consignee)
+//        viewModel.insertConsignee(consignee)
         showMessage("Consignee saved")
         dismiss()
     }

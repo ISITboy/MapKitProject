@@ -31,15 +31,20 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
 
-    buildFeatures{
+    buildFeatures {
+        compose = true
         viewBinding = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.2"
     }
 }
 
@@ -96,4 +101,17 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+
+
+    //Compose -->
+    //This dependency integrates Jetpack Compose with the Activity class, enabling the use of Compose in Android activities.
+    implementation("androidx.activity:activity-compose:1.8.1")
+//Compose Bill of Materials (BOM), which helps manage versions of Compose libraries. In this case, it's using version 2023.03.00 for Compose dependencies.
+    implementation(platform("androidx.compose:compose-bom:2024.05.00"))
+//This dependency includes the fundamental UI elements and features provided by Jetpack Compose.
+    implementation("androidx.compose.ui:ui")
+//This includes tooling and preview functionalities for Compose, assisting with development and debugging UI components.
+    implementation("androidx.compose.ui:ui-tooling-preview")
+//This dependency includes the Material Design 3 components and styles adapted for Jetpack Compose, allowing the implementation of Material Design principles in your app's UI
+    implementation("androidx.compose.material3:material3")
 }
