@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.example.mapkitresultproject.domain.Constants.TABLE_CONSIGNEE
 import com.example.mapkitresultproject.domain.models.Consignee
 import kotlinx.coroutines.flow.Flow
@@ -13,6 +14,9 @@ import kotlinx.coroutines.flow.Flow
 interface ConsigneeDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(consignee: Consignee)
+
+    @Update
+    suspend fun update(consignee: Consignee)
     @Delete
     suspend fun delete(consignee: Consignee)
     @Query("SELECT * FROM $TABLE_CONSIGNEE")

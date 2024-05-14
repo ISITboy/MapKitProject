@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 interface ConsigneeRepository {
     suspend fun insert(consignee: Consignee)
     suspend fun delete(consignee: Consignee)
+    suspend fun update(consignee: Consignee)
     fun getAllConsignee(): Flow<List<Consignee>>
     suspend fun getConsignee(id: Int): Consignee?
 }

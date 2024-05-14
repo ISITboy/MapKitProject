@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import com.example.mapkitresultproject.domain.Constants.TABLE_SHIPPER
 import com.example.mapkitresultproject.domain.models.Shipper
 import com.example.mapkitresultproject.domain.models.ShipperWithConsignee
@@ -16,6 +17,8 @@ interface ShipperDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(shipper: Shipper)
+    @Update
+    suspend fun update(shipper: Shipper)
 
     @Delete
     suspend fun delete(shipper: Shipper)

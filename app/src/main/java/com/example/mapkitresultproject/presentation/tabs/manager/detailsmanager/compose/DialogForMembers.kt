@@ -1,5 +1,6 @@
 package com.example.mapkitresultproject.presentation.tabs.manager.detailsmanager.compose
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -16,9 +17,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
@@ -33,15 +37,20 @@ import com.example.mapkitresultproject.presentation.tabs.manager.detailsmanager.
 @Composable
 fun DialogForMembers(
     modifier: Modifier = Modifier,
+    texts: MutableList<Pair<MutableState<String>, MutableState<Boolean>>> = mutableListOf(),
     openDialog: MutableState<DialogEvent>,
-    placeholder: String,
+    addressPlaceholder: String,
     event: (MembersEvent) -> Unit
 ) {
-    val texts = remember {
-        mutableListOf<Pair<MutableState<String>, MutableState<Boolean>>>()
+    var typeEvent by remember {         //true - save, but false - update
+        mutableStateOf(true)
     }
+    LaunchedEffect(key1 = Unit, block = {
+        Log.d("myLog","LaunchedEffect, result: ${texts.first().first.value.isEmpty()}")
+        typeEvent = texts.first().first.value.isEmpty()
+    })
     AlertDialog(
-        onDismissRequest = { openDialog.value = DialogEvent.HideDialog;texts.clear() },
+        onDismissRequest = { openDialog.value = DialogEvent.HideMembersDialog;texts.clear() },
         title = { Text(text = "Добавить члена") },
         text = {
             if (openDialog.value == DialogEvent.OpenConsigneeDialog) {
@@ -52,25 +61,25 @@ fun DialogForMembers(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    texts.add(Pair(mutableStateOf(""), mutableStateOf(false)))
-                    texts.add(Pair(mutableStateOf(""), mutableStateOf(false)))
+//                    texts.add(Pair(mutableStateOf(""), mutableStateOf(false)))
+//                    texts.add(Pair(mutableStateOf(""), mutableStateOf(false)))
                     InputMemberInfo(
-                        placeholder = placeholder,
+                        placeholder = addressPlaceholder,
                         invalid = texts.first().second,
                         text = texts.first().first
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     InputMemberInfo(
-                        placeholder = "масса",
+                        placeholder = "грузоп-сть, кг",
                         invalid = texts.last().second,
                         text = texts.last().first,
                         keyboardTypeIsNumber = true
                     )
                 }
             } else {
-                texts.add(Pair(mutableStateOf(""), mutableStateOf(false)))
+//                texts.add(Pair(mutableStateOf(""), mutableStateOf(false)))
                 InputMemberInfo(
-                    placeholder = placeholder,
+                    placeholder = addressPlaceholder,
                     invalid = texts.first().second,
                     text = texts.first().first
                 )
@@ -82,26 +91,35 @@ fun DialogForMembers(
                 confirmEvent(
                     texts = texts,
                     openDialog = openDialog,
-                    clickSaveShipper = { event(MembersEvent.AddShipperItem(Shipper(address = texts.first().first.value))) },
+                    clickSaveShipper = {
+                        if (typeEvent) {
+                            event(MembersEvent.AddShipperItem(Shipper(address = texts.first().first.value)))
+                        } else event(MembersEvent.UpdateShipperItem(Shipper(address = texts.first().first.value)))
+                    },
                     clickSaveConsignee = {
-                        event(
-                            MembersEvent.AddConsigneeItem(
+                        if(typeEvent){
+                            event(
+                                MembersEvent.AddConsigneeItem(
+                                    Consignee(
+                                        address = texts.first().first.value,
+                                        volume = texts.last().first.value
+                                    )
+                                )
+                            )
+                        }else event(
+                            MembersEvent.UpdateConsigneeItem(
                                 Consignee(
                                     address = texts.first().first.value,
-                                    volume = texts.last().first.value.toDouble()
+                                    volume = texts.last().first.value
                                 )
                             )
                         )
+
                     }
                 )
 
             }) {
                 Text("OK", fontSize = 22.sp)
-            }
-        },
-        dismissButton = {
-            Button({ openDialog.value = DialogEvent.HideDialog; texts.clear() }) {
-                Text("Назад", fontSize = 22.sp)
             }
         }
     )
@@ -151,7 +169,7 @@ private fun confirmEvent(
             2 -> clickSaveConsignee()
         }
         texts.clear()
-        openDialog.value = DialogEvent.HideDialog
+        openDialog.value = DialogEvent.HideMembersDialog
     } else {
         texts.filter { it.first.value.isEmpty() }.forEach {
             it.second.value = true

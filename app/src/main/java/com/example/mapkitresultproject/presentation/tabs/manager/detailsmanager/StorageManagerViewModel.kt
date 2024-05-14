@@ -6,6 +6,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.mapkitresultproject.domain.models.Consignee
 import com.example.mapkitresultproject.domain.models.Shipper
+import com.example.mapkitresultproject.domain.models.Transport
+import com.example.mapkitresultproject.domain.repository.TransportRepository
 import com.example.mapkitresultproject.domain.state.SearchRouteState
 import com.example.mapkitresultproject.domain.state.SearchState
 import com.example.mapkitresultproject.domain.usecase.ConsigneeUsesCases
@@ -28,7 +30,8 @@ import javax.inject.Inject
 class StorageManagerViewModel @Inject constructor(
     private val consigneeUsesCases: ConsigneeUsesCases,
     private val shipperUsesCases: ShipperUsesCases,
-    private val searchUseCase: SearchUseCase
+    private val searchUseCase: SearchUseCase,
+    private val transportRepository: TransportRepository
 ) : MapKitViewModel() {
 
     private val shipperItems = MutableLiveData<List<Shipper>>()
@@ -39,6 +42,11 @@ class StorageManagerViewModel @Inject constructor(
     private val consigneeItems = MutableLiveData<List<Consignee>>()
     fun getConsignee(): LiveData<List<Consignee>> {
         return consigneeItems
+    }
+
+    private val transportsItems = MutableLiveData<List<Transport>>()
+    fun getTransports(): LiveData<List<Transport>> {
+        return transportsItems
     }
 
 
@@ -59,12 +67,34 @@ class StorageManagerViewModel @Inject constructor(
         consigneeUsesCases.deleteConsigneeUseCase(consignee = consignee)
     }
 
+    private fun updateConsignee(consignee: Consignee)= viewModelScope.launch {
+        consigneeUsesCases.updateConsigneeUseCase(consignee = consignee)
+    }
+    private fun updateShipper(shipper: Shipper)= viewModelScope.launch {
+        shipperUsesCases.updateShipperUseCase(shipper=shipper)
+    }
+
+    private fun insertTransport(transport: Transport) = viewModelScope.launch {
+        transportRepository.insertTransport(transport)
+    }
+    private fun updateTransport(transport: Transport) = viewModelScope.launch {
+        transportRepository.updateTransport(transport)
+    }
+    private fun deleteTransport(transport: Transport) = viewModelScope.launch {
+        transportRepository.deleteTransport(transport)
+    }
+
     fun eventManager(event: MembersEvent){
         when(event){
             is MembersEvent.AddConsigneeItem -> insertConsignee(event.consignee)
             is MembersEvent.AddShipperItem -> insertShipper(event.shipper)
             is MembersEvent.DeleteConsigneeItem -> deleteConsignee(event.consignee)
             is MembersEvent.DeleteShipperItem -> deleteShipper(event.shipper)
+            is MembersEvent.UpdateConsigneeItem -> updateConsignee(event.consignee)
+            is MembersEvent.UpdateShipperItem -> updateShipper(event.shipper)
+            is MembersEvent.AddTransportItem -> insertTransport(event.transport)
+            is MembersEvent.DeleteTransportItem -> deleteTransport(event.transport)
+            is MembersEvent.UpdateTransportItem -> updateTransport(event.transport)
         }
     }
 
@@ -79,6 +109,11 @@ class StorageManagerViewModel @Inject constructor(
         consigneeUsesCases.getAllConsigneeUseCase().collect {
             consigneeItems.postValue(it)
             Log.d("MyLog","sizeM: ${consigneeItems.value?.size}")
+        }
+    }
+    fun getAllTransportItems() = viewModelScope.launch {
+        transportRepository.getAllTransports().collect {
+            transportsItems.postValue(it)
         }
     }
 

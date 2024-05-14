@@ -6,6 +6,7 @@ import androidx.room.Room
 import com.example.mapkitresultproject.data.local.room.ConsigneeDao
 import com.example.mapkitresultproject.data.local.room.Database
 import com.example.mapkitresultproject.data.local.room.ShipperDao
+import com.example.mapkitresultproject.data.local.room.TransportDao
 import com.example.mapkitresultproject.data.local.sharedPref.SharedPrefUserStorage
 import com.example.mapkitresultproject.data.remote.FirebaseService
 import com.example.mapkitresultproject.data.remote.RoutesApi
@@ -18,6 +19,7 @@ import com.example.mapkitresultproject.data.repository.MapKitInteractionMapRepos
 import com.example.mapkitresultproject.data.repository.MapKitSearchRepositoryImpl
 import com.example.mapkitresultproject.data.repository.SharedPrefUserStorageRepositoryImpl
 import com.example.mapkitresultproject.data.repository.ShipperRepositoryImpl
+import com.example.mapkitresultproject.data.repository.TransportRepositoryImpl
 import com.example.mapkitresultproject.domain.Constants.DATABASE_NAME
 import com.example.mapkitresultproject.domain.repository.AuthRepository
 import com.example.mapkitresultproject.domain.repository.ConsigneeRepository
@@ -26,6 +28,7 @@ import com.example.mapkitresultproject.domain.repository.MapKitInteractionMapRep
 import com.example.mapkitresultproject.domain.repository.MapKitSearchRepository
 import com.example.mapkitresultproject.domain.repository.SharedPrefUserStorageRepository
 import com.example.mapkitresultproject.domain.repository.ShipperRepository
+import com.example.mapkitresultproject.domain.repository.TransportRepository
 import com.example.mapkitresultproject.domain.usecase.ConsigneeUsesCases
 import com.example.mapkitresultproject.domain.usecase.SharedPrefUserStorageUsesCases
 import com.example.mapkitresultproject.domain.usecase.ShipperUsesCases
@@ -33,6 +36,7 @@ import com.example.mapkitresultproject.domain.usecase.consignee.DeleteConsigneeU
 import com.example.mapkitresultproject.domain.usecase.consignee.GetAllConsigneesUseCase
 import com.example.mapkitresultproject.domain.usecase.consignee.GetConsigneeUseCase
 import com.example.mapkitresultproject.domain.usecase.consignee.InsertConsigneeUseCase
+import com.example.mapkitresultproject.domain.usecase.consignee.UpdateConsigneeUseCase
 import com.example.mapkitresultproject.domain.usecase.sharedpreferences.DeleteUIDUseCase
 import com.example.mapkitresultproject.domain.usecase.sharedpreferences.GetUIDUseCase
 import com.example.mapkitresultproject.domain.usecase.sharedpreferences.SaveUIDUsesCase
@@ -40,6 +44,7 @@ import com.example.mapkitresultproject.domain.usecase.shipper.DeleteShipperUseCa
 import com.example.mapkitresultproject.domain.usecase.shipper.GetAllShippersUseCase
 import com.example.mapkitresultproject.domain.usecase.shipper.GetShipperUseCase
 import com.example.mapkitresultproject.domain.usecase.shipper.InsertShipperUseCase
+import com.example.mapkitresultproject.domain.usecase.shipper.UpdateShipperUseCase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.FirebaseDatabase
@@ -80,6 +85,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideTransportDao(
+        database: Database
+    ): TransportDao = database.transportDao
+
+    @Provides
+    @Singleton
     fun provideConsigneeDao(
         database: Database
     ): ConsigneeDao = database.consigneeDao
@@ -89,6 +100,12 @@ object AppModule {
     fun providesShipperRepository(
         shipperDao: ShipperDao
     ): ShipperRepository = ShipperRepositoryImpl(shipperDao = shipperDao)
+
+    @Provides
+    @Singleton
+    fun providesTransportRepository(
+        transportDao: TransportDao
+    ): TransportRepository = TransportRepositoryImpl(transportDao = transportDao)
 
     @Provides
     @Singleton
@@ -102,18 +119,31 @@ object AppModule {
         deleteShipperUseCase: DeleteShipperUseCase,
         insertShipperUseCase: InsertShipperUseCase,
         getAllShipperUseCase: GetAllShippersUseCase,
-        getShipperUseCase: GetShipperUseCase
+        getShipperUseCase: GetShipperUseCase,
+        updateShipperUseCase: UpdateShipperUseCase
     ): ShipperUsesCases = ShipperUsesCases(
-        deleteShipperUseCase,insertShipperUseCase,getAllShipperUseCase,getShipperUseCase)
+        deleteShipperUseCase,
+        insertShipperUseCase,
+        getAllShipperUseCase,
+        getShipperUseCase,
+        updateShipperUseCase
+    )
+
     @Provides
     @Singleton
     fun providesConsigneeUsesCases(
         deleteConsigneeUseCase: DeleteConsigneeUseCase,
         insertConsigneeUseCase: InsertConsigneeUseCase,
         getAllConsigneeUseCase: GetAllConsigneesUseCase,
-        getConsigneeUseCase: GetConsigneeUseCase
+        getConsigneeUseCase: GetConsigneeUseCase,
+        updateConsigneeUseCase: UpdateConsigneeUseCase
     ): ConsigneeUsesCases = ConsigneeUsesCases(
-        deleteConsigneeUseCase,insertConsigneeUseCase,getAllConsigneeUseCase,getConsigneeUseCase)
+        deleteConsigneeUseCase,
+        insertConsigneeUseCase,
+        getAllConsigneeUseCase,
+        getConsigneeUseCase,
+        updateConsigneeUseCase
+    )
 
     @Provides
     @Singleton
@@ -172,28 +202,35 @@ object AppModule {
         deleteUIDUseCase: DeleteUIDUseCase,
         getUIDUseCase: GetUIDUseCase,
         saveUIDUsesCase: SaveUIDUsesCase
-    ): SharedPrefUserStorageUsesCases =SharedPrefUserStorageUsesCases(deleteUIDUseCase, getUIDUseCase, saveUIDUsesCase)
+    ): SharedPrefUserStorageUsesCases =
+        SharedPrefUserStorageUsesCases(deleteUIDUseCase, getUIDUseCase, saveUIDUsesCase)
 
     @Provides
     @Singleton
     fun provideAuthRepository(
-        auth:FirebaseAuth,
+        auth: FirebaseAuth,
         sharedPrefUserStorageUsesCases: SharedPrefUserStorageUsesCases
-    ): AuthRepository = AuthRepositoryImpl(auth = auth, sharedPrefUserStorageUsesCases = sharedPrefUserStorageUsesCases)
+    ): AuthRepository = AuthRepositoryImpl(
+        auth = auth,
+        sharedPrefUserStorageUsesCases = sharedPrefUserStorageUsesCases
+    )
 
     @Provides
     @Singleton
     fun providesSharedPrefUserStorageRepository(
         sharedPrefUserStorage: SharedPrefUserStorage
-    ): SharedPrefUserStorageRepository = SharedPrefUserStorageRepositoryImpl(sharedPrefUserStorage = sharedPrefUserStorage)
+    ): SharedPrefUserStorageRepository =
+        SharedPrefUserStorageRepositoryImpl(sharedPrefUserStorage = sharedPrefUserStorage)
 
     @Provides
     @Singleton
-    fun provideFirebaseDatabase() : FirebaseDatabase = FirebaseDatabase.getInstance("https://fir-practic-80202-default-rtdb.europe-west1.firebasedatabase.app/")
+    fun provideFirebaseDatabase(): FirebaseDatabase =
+        FirebaseDatabase.getInstance("https://fir-practic-80202-default-rtdb.europe-west1.firebasedatabase.app/")
+
     @Provides
     @Singleton
     fun providesFirebaseRepository(
-        firebaseDatabase:FirebaseDatabase,
+        firebaseDatabase: FirebaseDatabase,
         getUIDUseCase: GetUIDUseCase
-    ): FirebaseService = FirebaseServiceImpl(firebaseDatabase,getUIDUseCase)
+    ): FirebaseService = FirebaseServiceImpl(firebaseDatabase, getUIDUseCase)
 }

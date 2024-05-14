@@ -4,11 +4,13 @@ import com.example.mapkitresultproject.domain.usecase.consignee.DeleteConsigneeU
 import com.example.mapkitresultproject.domain.usecase.consignee.GetAllConsigneesUseCase
 import com.example.mapkitresultproject.domain.usecase.consignee.GetConsigneeUseCase
 import com.example.mapkitresultproject.domain.usecase.consignee.InsertConsigneeUseCase
+import com.example.mapkitresultproject.domain.usecase.consignee.UpdateConsigneeUseCase
 import javax.inject.Inject
 
 data class ConsigneeUsesCases @Inject constructor(
     val deleteConsigneeUseCase: DeleteConsigneeUseCase,
     val insertConsigneeUseCase: InsertConsigneeUseCase,
     val getAllConsigneeUseCase: GetAllConsigneesUseCase,
-    val getConsigneeUseCase: GetConsigneeUseCase
+    val getConsigneeUseCase: GetConsigneeUseCase,
+    val updateConsigneeUseCase: UpdateConsigneeUseCase
 )

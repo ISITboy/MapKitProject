@@ -5,9 +5,11 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,13 +41,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mapkitresultproject.R
 import com.example.mapkitresultproject.domain.models.Transport
+import com.example.mapkitresultproject.presentation.tabs.manager.detailsmanager.MembersEvent
 
 @Composable
-fun TruckContainer(modifier: Modifier = Modifier) {
+fun TruckContainer(
+    modifier: Modifier = Modifier,
+    transports: List<Transport>,
+    addTransportClick : () -> Unit,
+    updateTransport:(Transport)->Unit
+) {
     var isVisible by remember { mutableStateOf(false) }
     val slideOffset by animateDpAsState(
         targetValue = if (isVisible) 150.dp else (0).dp,
@@ -56,7 +65,7 @@ fun TruckContainer(modifier: Modifier = Modifier) {
         Image(
             modifier = Modifier
                 .size(60.dp)
-                .clickable { },
+                .clickable { addTransportClick() },
             painter = painterResource(id = R.drawable.ic_bus_80),
             contentDescription = null
         )
@@ -66,12 +75,10 @@ fun TruckContainer(modifier: Modifier = Modifier) {
                 .height(60.dp)
                 .width(slideOffset)
         ){
-            items(listOf(
-                Transport(name ="Фура",volume =4000.0),
-                Transport(name="Бус", volume = 1000.0),
-                Transport(name="Машина", volume = 300.0),
-            )) { transport ->
-                TransportItem(transport = transport)
+            items(transports) { transport ->
+                TransportItem(transport = transport){
+                    updateTransport(transport)
+                }
             }
         }
         Image(
@@ -85,21 +92,23 @@ fun TruckContainer(modifier: Modifier = Modifier) {
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TransportItem(modifier: Modifier = Modifier, transport: Transport){
+fun TransportItem(modifier: Modifier = Modifier, transport: Transport, updateTransportClick:()->Unit){
     Card(
-        modifier = modifier.padding(horizontal = 3.dp),
+        modifier = modifier.padding(horizontal = 3.dp).size(width = 60.dp, height = 100.dp)
+            .clickable { updateTransportClick() },
         shape = RoundedCornerShape(3.dp),
         elevation = CardDefaults.cardElevation(5.dp),
         border = BorderStroke(width = 1.dp, Color.White)
     ){
         Column(
-            modifier = Modifier.background(colorResource(id = R.color.card_view_background)),
+            modifier = Modifier.fillMaxSize().background(colorResource(id = R.color.card_view_background)),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(transport.name, fontSize = 15.sp ,modifier= Modifier.padding(horizontal = 2.dp))
+            Text(transport.name, fontSize = 15.sp ,modifier= Modifier.padding(horizontal = 2.dp),overflow = TextOverflow.Ellipsis, maxLines = 1)
             Spacer(modifier = Modifier.height(5.dp))
-            Text(transport.volume.toString(), fontSize = 15.sp,modifier= Modifier.padding(horizontal = 2.dp))
+            Text(transport.volume, fontSize = 15.sp,modifier= Modifier.padding(horizontal = 2.dp),overflow = TextOverflow.Ellipsis,maxLines = 1)
             Spacer(modifier = Modifier.height(5.dp))
             Text(modifier = Modifier.align(Alignment.CenterHorizontally),text = "кг.", fontSize = 10.sp)
         }

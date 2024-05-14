@@ -16,6 +16,10 @@ class ShipperRepositoryImpl @Inject constructor(
         shipperDao.insert(shipper)
     }
 
+    override suspend fun updateShipper(shipper: Shipper) {
+        shipperDao.update(shipper)
+    }
+
     override suspend fun deleteShipper(shipper: Shipper) {
         shipperDao.delete(shipper)
     }

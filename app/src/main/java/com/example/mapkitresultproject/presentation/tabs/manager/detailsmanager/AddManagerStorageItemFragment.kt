@@ -61,7 +61,7 @@ class AddManagerStorageItemFragment : BottomSheetDialogFragment()  {
                 true -> showMessage("Address and Volume cannot be Empty!")
                 false -> saveConsigneeItem(Consignee(
                     address = edtAddress.text.toString(),
-                    volume = edtVolume.text.toString().toDouble()
+                    volume = edtVolume.text.toString()
                 ))
             }
         }

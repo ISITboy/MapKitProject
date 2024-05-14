@@ -20,6 +20,10 @@ class ConsigneeRepositoryImpl @Inject constructor(
         consigneeDao.delete(consignee)
     }
 
+    override suspend fun update(consignee: Consignee) {
+        consigneeDao.update(consignee)
+    }
+
     override fun getAllConsignee(): Flow<List<Consignee>> = consigneeDao.getAllConsignee()
 
     override suspend fun getConsignee(id: Int): Consignee? = consigneeDao.getConsignee(id)

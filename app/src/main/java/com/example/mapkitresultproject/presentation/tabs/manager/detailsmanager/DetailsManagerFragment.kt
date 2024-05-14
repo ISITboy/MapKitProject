@@ -56,51 +56,28 @@ class DetailsManagerFragment : MapKitFragment<FragmentDetailsManagerBinding>() {
         composeContainer.setContent {
             val providers = viewModel.getShipper().observeAsState()
             val consignee = viewModel.getConsignee().observeAsState()
-            if (providers.value != null && consignee.value != null) {
+            val transports = viewModel.getTransports().observeAsState()
+            if (providers.value != null && consignee.value != null && transports.value!=null) {
                 DetailsManagerCompose(
                     providers = providers.value!!,
                     consumers = consignee.value!!,
-                    event = viewModel::eventManager
+                    transports = transports.value!!,
+                    event = viewModel::eventManager,
+                    makeRoute = {
+                        val shippers = viewModel.getShipper().value?.map { it.address } ?: emptyList()
+                        val consignees = viewModel.getConsignee().value?.map { it.address } ?: emptyList()
+                        val addresses = shippers + consignees
+                        val items: Queue<String> = LinkedList(addresses)
+                        viewModel.createSearchSession(items)
+                    }
                 )
             }
         }
         viewModel.getAllShipperItems()
         viewModel.getAllConsigneeItems()
-//        viewModel.getShipper().observe(requireActivity(), Observer {
-//
-//            Log.d("MyLog", "sizeStorageManager: ${it.size}")
-//        })
-//
-//        viewModel.getConsignee().observe(requireActivity(), Observer {
-//
-//        })
-
-//        binding.addConsigneesButton.setOnClickListener {
-//            viewModel.event.value = ManagerEvent.AddConsigneeItem
-//            Log.d("MyLog", "value = ${viewModel.event.value}")
-//            AddManagerStorageItemFragment().show(
-//                childFragmentManager,
-//                AddManagerStorageItemFragment().tag
-//            )
-//        }
-//        binding.addShipperButton.setOnClickListener {
-//            viewModel.event.value = ManagerEvent.AddShipperItem
-//            AddManagerStorageItemFragment().show(
-//                childFragmentManager,
-//                AddManagerStorageItemFragment().tag
-//            )
-//        }
-//        viewModel.setVisibleRegion(null)
-//        viewModel.setSearchOption(SearchOptionBuilder().build().setResultPageSize(1))
-//
-//
-//        binding.startButton.setOnClickListener {
-//            val shippers = viewModel.getShipper().value?.map { it.address } ?: emptyList()
-//            val consignees = viewModel.getConsignee().value?.map { it.address } ?: emptyList()
-//            val addresses = shippers + consignees
-//            val items: Queue<String> = LinkedList(addresses)
-//            viewModel.createSearchSession(items)
-//        }
+        viewModel.getAllTransportItems()
+        viewModel.setVisibleRegion(null)
+        viewModel.setSearchOption(SearchOptionBuilder().build().setResultPageSize(1))
     }
 
     override fun <T> actionWithStateError(state: T) {
@@ -129,7 +106,6 @@ class DetailsManagerFragment : MapKitFragment<FragmentDetailsManagerBinding>() {
                     findNavController().popBackStack()
                 }
             }
-
             is SearchRouteState.Success -> {}
         }
     }

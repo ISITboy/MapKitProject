@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 interface ShipperRepository {
 
     suspend fun insertShipper(shipper: Shipper)
+    suspend fun updateShipper(shipper: Shipper)
     suspend fun deleteShipper(shipper: Shipper)
     fun getAllShippers(): Flow<List<Shipper>>
     suspend fun getShipper(id: Int): Shipper?
